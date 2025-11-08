@@ -65,10 +65,15 @@ export default function Contact() {
 
   return (
     <div className="w-full h-auto py-6">
-      <div ref={titleRef} className="text-center text-5xl font-extrabold">
-        <span>
-          Geleceğe Açılan <br />
-          Dijital Dokunuş
+      <div
+        ref={titleRef}
+        className="flex justify-center items-center flex-col gap-4"
+      >
+        <button className="hover:bg-black hover:text-white transition-all duration-300 border border-black text-black px-4 py-2 rounded-md cursor-pointer">
+          Şimdi İletişime Geç
+        </button>
+        <span className="text-center text-5xl font-extrabold mb-6">
+          Geleceğe Açılan Dijital Dokunuş
         </span>
       </div>
       <div
