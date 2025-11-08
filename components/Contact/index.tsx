@@ -21,40 +21,40 @@ export default function Contact() {
 
     gsap.set(leftImage, { x: "-100%" });
     gsap.set(rightImage, { x: "100%" });
-    gsap.set(title, { opacity: 0, y: 100 });
+    gsap.set(title, { opacity: 0, y: 0 });
 
     gsap.to(title, {
       opacity: 1,
-      y: 0,
+      y: 100,
       duration: 1,
       ease: "power2.inOut",
       scrollTrigger: {
         trigger: title,
-        start: "center bottom",
+        start: "top bottom",
         end: "bottom top",
-        scrub: 1,
+        scrub: 3,
       },
     });
 
     gsap.to(leftImage, {
       x: "0%",
-      ease: "power2.out",
+      ease: "sine.inOut",
       scrollTrigger: {
         trigger: leftImage,
         start: "top bottom",
-        end: "center center",
-        scrub: 2,
+        end: "center 60%+=100px",
+        scrub: 3,
       },
     });
 
     gsap.to(rightImage, {
       x: "0%",
-      ease: "power2.out",
+      ease: "sine.inOut",
       scrollTrigger: {
         trigger: rightImage,
         start: "top bottom",
-        end: "center center",
-        scrub: 2,
+        end: "center 60%+=100px",
+        scrub: 3,
       },
     });
 
