@@ -1,13 +1,8 @@
-"use client";
-
-import Error from "next/error";
-
 export default function NotFound() {
   return (
-    <html lang="en">
-      <body>
-        <Error statusCode={404} />
-      </body>
-    </html>
+    <div className="flex min-h-screen flex-col items-center justify-center">
+      <h1 className="text-4xl font-bold">404</h1>
+      <p className="mt-4 text-lg">Sayfa bulunamadı</p>
+    </div>
   );
 }
