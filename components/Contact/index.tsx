@@ -8,7 +8,7 @@ export default function Contact() {
     <div className="w-full h-auto  grid grid-cols-2 py-6">
       <div className="w-full h-full flex items-end">
         <Image
-          src="/assets/contact/sol-el.png"
+          src="/assets/contact/sol-el-no-holo.png"
           alt="Contact"
           className="object-cover w-full h-auto"
           quality={100}
@@ -18,7 +18,7 @@ export default function Contact() {
       </div>
       <div className="w-full h-full flex items-start">
         <Image
-          src="/assets/contact/sag-robot-el.png"
+          src="/assets/contact/sag-robot-el-no-holo.png"
           alt="Contact"
           className="object-cover w-full h-auto"
           quality={100}
