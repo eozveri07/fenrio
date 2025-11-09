@@ -11,6 +11,12 @@ export default function Preview() {
         >
           Contact
         </Link>
+        <Link
+          href="/preview/hero"
+          className="text-blue-500 hover:text-blue-600 hover:underline"
+        >
+          Hero
+        </Link>
       </div>
     </div>
   );
