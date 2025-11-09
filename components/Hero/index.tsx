@@ -9,7 +9,6 @@ import { useEffect } from "react";
 function HeroContent() {
   const { setBackgroundImageLoaded, animationCompleted } = useHeroContext();
 
-  // Animasyon tamamlanana kadar scroll'u engelle
   useEffect(() => {
     if (!animationCompleted) {
       document.documentElement.style.overflow = "hidden";
@@ -36,7 +35,7 @@ function HeroContent() {
           alt="Background"
           width={1920}
           height={1080}
-          quality={100}
+          quality={75}
           className="w-full h-full object-cover"
           onLoad={() => setBackgroundImageLoaded(true)}
           priority
