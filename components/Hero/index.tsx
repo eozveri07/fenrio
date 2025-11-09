@@ -1,5 +1,6 @@
 import AnimatedLogo from "./animated-logo";
 import Image from "next/image";
+import ScrollDown from "./scroll-down";
 
 export default function Hero() {
   return (
@@ -17,6 +18,7 @@ export default function Hero() {
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_0%,transparent_0%,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.4)_100%)]" />
       </div>
       <AnimatedLogo />
+      <ScrollDown />
     </div>
   );
 }
