@@ -10,16 +10,24 @@ export default function AnimatedLogo() {
   const logoImageRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Animasyon fonksiyonu
   const startAnimation = () => {
     const container = containerRef.current;
     const textContainer = textContainerRef.current;
     const logoImage = logoImageRef.current;
     const title = titleRef.current;
     const subtitle = subtitleRef.current;
-    if (!container || !textContainer || !logoImage || !title || !subtitle)
+    const overlay = overlayRef.current;
+    if (
+      !container ||
+      !textContainer ||
+      !logoImage ||
+      !title ||
+      !subtitle ||
+      !overlay
+    )
       return;
 
     const viewportWidth = window.innerWidth;
@@ -45,6 +53,16 @@ export default function AnimatedLogo() {
       duration: containerHeightDuration,
       ease: "power2.inOut",
     });
+
+    tl.to(
+      overlay,
+      {
+        opacity: 0,
+        duration: containerHeightDuration,
+        ease: "power2.inOut",
+      },
+      "<"
+    );
 
     textContainer.style.width = "auto";
     textContainer.style.visibility = "hidden";
@@ -89,10 +107,10 @@ export default function AnimatedLogo() {
       gsap.killTweensOf(textContainer);
       gsap.killTweensOf(title);
       gsap.killTweensOf(subtitle);
+      gsap.killTweensOf(overlay);
     };
   };
 
-  // Görsel yüklendikten sonra animasyonu başlat
   useEffect(() => {
     if (imageLoaded) {
       const cleanup = startAnimation();
@@ -100,47 +118,52 @@ export default function AnimatedLogo() {
     }
   }, [imageLoaded]);
 
-  // Görsel yükleme handler'ı
   const handleImageLoad = () => {
     setImageLoaded(true);
   };
 
   return (
-    <div
-      ref={containerRef}
-      className="flex items-end justify-center w-full h-[90vh]"
-    >
+    <>
       <div
-        ref={logoImageRef}
-        className="overflow-hidden flex items-center justify-center h-full relative"
-      >
-        <Image
-          src="/fenrio-logo.png"
-          alt="Fenrio Logo"
-          className="object-cover w-auto h-full drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
-          width={1920}
-          height={1080}
-          onLoad={handleImageLoad}
-          priority
-        />
-      </div>
+        ref={overlayRef}
+        className="fixed inset-0 bg-black z-50 pointer-events-none opacity-100"
+      />
       <div
-        ref={textContainerRef}
-        className="relative z-10 overflow-hidden w-0 opacity-0"
+        ref={containerRef}
+        className="flex items-end justify-center w-full h-[90vh] relative z-100"
       >
-        <h2
-          ref={titleRef}
-          className="text-9xl font-bold relative z-10 opacity-0 text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
+        <div
+          ref={logoImageRef}
+          className="overflow-hidden flex items-center justify-center h-full relative"
         >
-          fenrio
-        </h2>
-        <p
-          ref={subtitleRef}
-          className="font-light relative z-10 uppercase text-[#D63E3D] x-[-100%] opacity-0 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
+          <Image
+            src="/fenrio-logo.png"
+            alt="Fenrio Logo"
+            className="object-cover w-auto h-full drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
+            width={1920}
+            height={1080}
+            onLoad={handleImageLoad}
+            priority
+          />
+        </div>
+        <div
+          ref={textContainerRef}
+          className="relative z-10 overflow-hidden w-0 opacity-0"
         >
-          Software Marketing
-        </p>
+          <h2
+            ref={titleRef}
+            className="text-9xl font-bold relative z-10 opacity-0 text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
+          >
+            fenrio
+          </h2>
+          <p
+            ref={subtitleRef}
+            className="font-light relative z-10 uppercase text-[#D63E3D] x-[-100%] opacity-0 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
+          >
+            Software Marketing
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
