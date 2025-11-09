@@ -17,6 +17,12 @@ export default function Preview() {
         >
           Hero
         </Link>
+        <Link
+          href="/preview/puzzle"
+          className="text-blue-500 hover:text-blue-600 hover:underline"
+        >
+          Puzzle
+        </Link>
       </div>
     </div>
   );
