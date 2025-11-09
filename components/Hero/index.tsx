@@ -33,24 +33,6 @@ export default function Hero() {
     const textWidthDuration = baseDuration * 1.0;
     const textFadeDuration = baseDuration * 0.6;
 
-    gsap.set(container, {
-      height: "90vh",
-    });
-
-    gsap.set(textContainer, {
-      width: 0,
-      opacity: 0,
-    });
-
-    gsap.set(title, {
-      opacity: 0,
-    });
-
-    gsap.set(subtitle, {
-      x: "-100%",
-      opacity: 0,
-    });
-
     const tl = gsap.timeline();
 
     const pauseDuration = 0.1;
@@ -110,7 +92,10 @@ export default function Hero() {
 
   return (
     <div className="w-full h-screen flex items-center justify-center overflow-hidden">
-      <div ref={containerRef} className="flex items-end justify-center w-full">
+      <div
+        ref={containerRef}
+        className="flex items-end justify-center w-full h-[90vh]"
+      >
         <div
           ref={logoImageRef}
           className="overflow-hidden flex items-center justify-center h-full relative"
@@ -123,13 +108,19 @@ export default function Hero() {
             height={1080}
           />
         </div>
-        <div ref={textContainerRef} className="relative z-10 overflow-hidden">
-          <h2 ref={titleRef} className="text-9xl font-bold relative z-10">
+        <div
+          ref={textContainerRef}
+          className="relative z-10 overflow-hidden w-0 opacity-0"
+        >
+          <h2
+            ref={titleRef}
+            className="text-9xl font-bold relative z-10 opacity-0"
+          >
             fenrio
           </h2>
           <p
             ref={subtitleRef}
-            className="font-light relative z-10 uppercase text-red-800"
+            className="font-light relative z-10 uppercase text-red-800 x-[-100%] opacity-0"
           >
             Software Marketing
           </p>
