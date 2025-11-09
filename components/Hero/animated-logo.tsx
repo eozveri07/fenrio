@@ -102,7 +102,7 @@ export default function AnimatedLogo() {
         duration: textFadeDuration,
         ease: "power2.out",
       },
-      `-=${textFadeDuration * 0.5}`
+      `-=${textFadeDuration * 0.05}`
     );
 
     // Animasyon tamamlandığında context'i güncelle
@@ -167,7 +167,7 @@ export default function AnimatedLogo() {
           </h2>
           <p
             ref={subtitleRef}
-            className="font-light relative z-10 uppercase text-[#D63E3D] x-[-100%] opacity-0 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
+            className="translate-x-full   font-light relative z-10 uppercase text-[#D63E3D] opacity-0 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
           >
             Software Marketing
           </p>
