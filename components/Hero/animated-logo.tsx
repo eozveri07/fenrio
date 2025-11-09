@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { useHeroContext } from "./context";
 
 export default function AnimatedLogo() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -12,6 +13,8 @@ export default function AnimatedLogo() {
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const { setLogoImageLoaded, setAnimationCompleted, backgroundImageLoaded } =
+    useHeroContext();
 
   const startAnimation = () => {
     const container = containerRef.current;
@@ -102,6 +105,11 @@ export default function AnimatedLogo() {
       `-=${textFadeDuration * 0.5}`
     );
 
+    // Animasyon tamamlandığında context'i güncelle
+    tl.call(() => {
+      setAnimationCompleted(true);
+    });
+
     return () => {
       gsap.killTweensOf(container);
       gsap.killTweensOf(textContainer);
@@ -112,14 +120,15 @@ export default function AnimatedLogo() {
   };
 
   useEffect(() => {
-    if (imageLoaded) {
+    if (imageLoaded && backgroundImageLoaded) {
       const cleanup = startAnimation();
       return cleanup;
     }
-  }, [imageLoaded]);
+  }, [imageLoaded, backgroundImageLoaded]);
 
   const handleImageLoad = () => {
     setImageLoaded(true);
+    setLogoImageLoaded(true);
   };
 
   return (
