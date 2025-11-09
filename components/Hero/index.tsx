@@ -5,90 +5,104 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 
 export default function Hero() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textContainerRef = useRef<HTMLDivElement>(null);
   const logoImageRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
+    const container = containerRef.current;
+    const textContainer = textContainerRef.current;
     const logoImage = logoImageRef.current;
     const title = titleRef.current;
     const subtitle = subtitleRef.current;
-    if (!logoImage || !title || !subtitle) return;
+    if (!container || !textContainer || !logoImage || !title || !subtitle)
+      return;
 
-    // Ekran boyutunu al (responsive için)
     const viewportWidth = window.innerWidth;
 
-    // Responsive animasyon süreleri - ekran boyutuna göre ayarla
-    // Küçük ekranlarda (768px) 0.25s, büyük ekranlarda (1920px) 0.35s
-    const minDuration = 0.4;
-    const maxDuration = 0.6;
-    const animDuration = Math.min(
+    const minDuration = 0.5;
+    const maxDuration = 0.8;
+    const baseDuration = Math.min(
       Math.max(minDuration, (viewportWidth / 1920) * maxDuration),
       maxDuration
     );
 
-    // Responsive delay değerleri
-    const delay1 = animDuration;
-    const delay2 = animDuration * 2;
-    const delay3 = animDuration * 3;
+    const containerHeightDuration = baseDuration * 1.2;
+    const textWidthDuration = baseDuration * 1.0;
+    const textFadeDuration = baseDuration * 0.6;
 
-    gsap.set(logoImage, {
-      top: "40%",
-      left: "10%",
-      transform: "translate(50%, 80%)",
+    gsap.set(container, {
       height: "90vh",
     });
 
-    gsap.to(logoImage, {
-      top: "0%",
-      left: "0%",
-      transform: "translate(0%, 0%)",
-      height: "100%",
-      duration: animDuration,
-      ease: "power2.inOut",
-      delay: delay1,
+    gsap.set(textContainer, {
+      width: 0,
+      opacity: 0,
     });
 
-    gsap.to(logoImage, {
-      x: 0,
-      y: 0,
-      duration: animDuration,
-      ease: "power2.inOut",
-      delay: delay2,
-    });
-
-    // Title Animations - Responsive
-    const titleStartX = Math.min(viewportWidth * 0.2, 384); // Max 384px
     gsap.set(title, {
       opacity: 0,
-      x: titleStartX,
     });
 
-    gsap.to(title, {
-      opacity: 1,
-      x: 0,
-      duration: animDuration,
-      ease: "power2.inOut",
-      delay: delay2,
-    });
-
-    // Subtitle Animations - Responsive
-    const subtitleStartX = Math.min(viewportWidth * -0.2, -384); // Max -384px
     gsap.set(subtitle, {
+      x: "-100%",
       opacity: 0,
-      x: subtitleStartX,
     });
 
-    gsap.to(subtitle, {
-      opacity: 1,
-      x: 0,
-      duration: animDuration,
+    const tl = gsap.timeline();
+
+    const pauseDuration = 0.1;
+
+    tl.to(container, {
+      delay: 0.5,
+      height: "200px",
+      duration: containerHeightDuration,
       ease: "power2.inOut",
-      delay: delay3,
     });
+
+    textContainer.style.width = "auto";
+    textContainer.style.visibility = "hidden";
+    const realWidth = textContainer.offsetWidth;
+    textContainer.style.width = "0px";
+    textContainer.style.visibility = "visible";
+
+    tl.to(
+      textContainer,
+      {
+        width: `${realWidth}px`,
+        opacity: 1,
+        duration: textWidthDuration,
+        ease: "power2.inOut",
+      },
+      `+=${pauseDuration}`
+    );
+
+    tl.to(
+      title,
+      {
+        opacity: 1,
+        duration: textFadeDuration,
+        ease: "power2.out",
+      },
+      `-=${textWidthDuration * 0.4}`
+    );
+
+    tl.to(
+      subtitle,
+      {
+        opacity: 1,
+        x: "0%",
+        duration: textFadeDuration,
+        ease: "power2.out",
+      },
+      `-=${textFadeDuration * 0.5}`
+    );
 
     return () => {
-      gsap.killTweensOf(logoImage);
+      gsap.killTweensOf(container);
+      gsap.killTweensOf(textContainer);
       gsap.killTweensOf(title);
       gsap.killTweensOf(subtitle);
     };
@@ -96,7 +110,7 @@ export default function Hero() {
 
   return (
     <div className="w-full h-screen flex items-center justify-center overflow-hidden">
-      <div className="flex items-end justify-center w-full h-[200px]">
+      <div ref={containerRef} className="flex items-end justify-center w-full">
         <div
           ref={logoImageRef}
           className="overflow-hidden flex items-center justify-center h-full relative"
@@ -109,7 +123,7 @@ export default function Hero() {
             height={1080}
           />
         </div>
-        <div className="relative z-10">
+        <div ref={textContainerRef} className="relative z-10 overflow-hidden">
           <h2 ref={titleRef} className="text-9xl font-bold relative z-10">
             fenrio
           </h2>
