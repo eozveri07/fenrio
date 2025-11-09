@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 
 export default function Hero() {
@@ -10,8 +10,10 @@ export default function Hero() {
   const logoImageRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  useEffect(() => {
+  // Animasyon fonksiyonu
+  const startAnimation = () => {
     const container = containerRef.current;
     const textContainer = textContainerRef.current;
     const logoImage = logoImageRef.current;
@@ -88,7 +90,20 @@ export default function Hero() {
       gsap.killTweensOf(title);
       gsap.killTweensOf(subtitle);
     };
-  }, []);
+  };
+
+  // Görsel yüklendikten sonra animasyonu başlat
+  useEffect(() => {
+    if (imageLoaded) {
+      const cleanup = startAnimation();
+      return cleanup;
+    }
+  }, [imageLoaded]);
+
+  // Görsel yükleme handler'ı
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
 
   return (
     <div className="w-full h-screen flex items-center justify-center overflow-hidden">
@@ -106,6 +121,8 @@ export default function Hero() {
             className="object-cover w-auto h-full"
             width={1920}
             height={1080}
+            onLoad={handleImageLoad}
+            priority
           />
         </div>
         <div
