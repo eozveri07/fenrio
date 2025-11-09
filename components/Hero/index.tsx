@@ -10,6 +10,31 @@ function HeroContent() {
   const { setBackgroundImageLoaded, animationCompleted } = useHeroContext();
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.history.scrollRestoration = "manual";
+    }
+
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+
+    scrollToTop();
+
+    requestAnimationFrame(() => {
+      scrollToTop();
+    });
+
+    if (document.readyState === "complete") {
+      scrollToTop();
+    } else {
+      window.addEventListener("load", scrollToTop);
+      return () => window.removeEventListener("load", scrollToTop);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!animationCompleted) {
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
