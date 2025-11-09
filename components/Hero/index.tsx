@@ -4,9 +4,26 @@ import AnimatedLogo from "./animated-logo";
 import Image from "next/image";
 import ScrollDown from "./scroll-down";
 import { HeroProvider, useHeroContext } from "./context";
+import { useEffect } from "react";
 
 function HeroContent() {
-  const { setBackgroundImageLoaded } = useHeroContext();
+  const { setBackgroundImageLoaded, animationCompleted } = useHeroContext();
+
+  // Animasyon tamamlanana kadar scroll'u engelle
+  useEffect(() => {
+    if (!animationCompleted) {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.style.overflow = "auto";
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.documentElement.style.overflow = "auto";
+      document.body.style.overflow = "auto";
+    };
+  }, [animationCompleted]);
 
   return (
     <div

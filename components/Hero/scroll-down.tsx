@@ -46,7 +46,7 @@ export default function ScrollDown() {
   return (
     <div
       ref={containerRef}
-      className="fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center gap-4"
+      className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center gap-4 z-200"
     >
       <div className="h-6 w-4 flex items-center justify-center border border-white rounded-full p-1">
         <div className="h-2 w-[2px] bg-white rounded-full animate-bounce" />
