@@ -5,6 +5,7 @@ import Image from "next/image";
 import ScrollDown from "./scroll-down";
 import { HeroProvider, useHeroContext } from "./context";
 import { useEffect } from "react";
+import HeroMain from "./main";
 
 function HeroContent() {
   const { setBackgroundImageLoaded, allAnimationsCompleted } = useHeroContext();
@@ -67,6 +68,7 @@ function HeroContent() {
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_0%,transparent_0%,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.4)_100%)]" />
       </div>
       <AnimatedLogo />
+      <HeroMain />
       <ScrollDown />
     </section>
   );
