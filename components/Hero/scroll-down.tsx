@@ -17,16 +17,9 @@ export default function ScrollDown() {
   useEffect(() => {
     const container = containerRef.current;
     if (!container || !allAnimationsCompleted) return;
-
-    // Başlangıçta görünmez
-    gsap.set(container, {
-      opacity: 0,
-      y: 20,
-    });
-
-    // Animasyon ile görünür ol
     gsap.to(container, {
       opacity: 0.5,
+      bottom: "25px",
       y: 0,
       duration: 0.8,
       ease: "power2.out",
@@ -46,7 +39,7 @@ export default function ScrollDown() {
   return (
     <div
       ref={containerRef}
-      className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center gap-4 z-200"
+      className="absolute bottom-0 left-1/2 -translate-x-1/2 flex items-center justify-center gap-4 z-200 opacity-0"
     >
       <div className="h-6 w-4 flex items-center justify-center border border-white rounded-full p-1">
         <div className="h-2 w-[2px] bg-white rounded-full animate-bounce" />
