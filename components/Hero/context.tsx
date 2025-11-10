@@ -1,32 +1,66 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  useMemo,
+  ReactNode,
+} from "react";
 
 interface HeroContextType {
+  // Refs
+  headerRef: React.RefObject<HTMLDivElement | null>;
+  // Image loading states
   backgroundImageLoaded: boolean;
   logoImageLoaded: boolean;
-  animationCompleted: boolean;
+  // Animation completion states
+  logoAnimationCompleted: boolean;
+  flipAnimationCompleted: boolean;
+  allAnimationsCompleted: boolean;
+  // Setters
   setBackgroundImageLoaded: (loaded: boolean) => void;
   setLogoImageLoaded: (loaded: boolean) => void;
-  setAnimationCompleted: (completed: boolean) => void;
+  setLogoAnimationCompleted: (completed: boolean) => void;
+  setFlipAnimationCompleted: (completed: boolean) => void;
 }
 
 const HeroContext = createContext<HeroContextType | undefined>(undefined);
 
-export function HeroProvider({ children }: { children: ReactNode }) {
+export function HeroProvider({
+  children,
+  headerRef: externalHeaderRef,
+}: {
+  children: ReactNode;
+  headerRef?: React.RefObject<HTMLDivElement | null>;
+}) {
+  const internalHeaderRef = useRef<HTMLDivElement | null>(null);
+  const headerRef = externalHeaderRef || internalHeaderRef;
   const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(false);
   const [logoImageLoaded, setLogoImageLoaded] = useState(false);
-  const [animationCompleted, setAnimationCompleted] = useState(false);
+  const [logoAnimationCompleted, setLogoAnimationCompleted] = useState(false);
+  const [flipAnimationCompleted, setFlipAnimationCompleted] = useState(false);
+
+  // Tüm animasyonlar tamamlandığında true olur
+  const allAnimationsCompleted = useMemo(
+    () => logoAnimationCompleted && flipAnimationCompleted,
+    [logoAnimationCompleted, flipAnimationCompleted]
+  );
 
   return (
     <HeroContext.Provider
       value={{
+        headerRef,
         backgroundImageLoaded,
         logoImageLoaded,
-        animationCompleted,
+        logoAnimationCompleted,
+        flipAnimationCompleted,
+        allAnimationsCompleted,
         setBackgroundImageLoaded,
         setLogoImageLoaded,
-        setAnimationCompleted,
+        setLogoAnimationCompleted,
+        setFlipAnimationCompleted,
       }}
     >
       {children}

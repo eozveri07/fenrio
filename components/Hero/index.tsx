@@ -6,12 +6,8 @@ import ScrollDown from "./scroll-down";
 import { HeroProvider, useHeroContext } from "./context";
 import { useEffect } from "react";
 
-function HeroContent({
-  headerRef,
-}: {
-  headerRef: React.RefObject<HTMLDivElement | null>;
-}) {
-  const { setBackgroundImageLoaded, animationCompleted } = useHeroContext();
+function HeroContent() {
+  const { setBackgroundImageLoaded, allAnimationsCompleted } = useHeroContext();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -38,7 +34,7 @@ function HeroContent({
   }, []);
 
   useEffect(() => {
-    if (!animationCompleted) {
+    if (!allAnimationsCompleted) {
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
     } else {
@@ -50,7 +46,7 @@ function HeroContent({
       document.documentElement.style.overflow = "auto";
       document.body.style.overflow = "auto";
     };
-  }, [animationCompleted]);
+  }, [allAnimationsCompleted]);
 
   return (
     <section
@@ -70,7 +66,7 @@ function HeroContent({
         />
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_0%,transparent_0%,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.4)_100%)]" />
       </div>
-      <AnimatedLogo headerRef={headerRef} />
+      <AnimatedLogo />
       <ScrollDown />
     </section>
   );
@@ -82,8 +78,8 @@ export default function Hero({
   headerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   return (
-    <HeroProvider>
-      <HeroContent headerRef={headerRef} />
+    <HeroProvider headerRef={headerRef}>
+      <HeroContent />
     </HeroProvider>
   );
 }

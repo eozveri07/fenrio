@@ -8,11 +8,7 @@ import { useHeroContext } from "./context";
 
 gsap.registerPlugin(Flip);
 
-export default function AnimatedLogo({
-  headerRef,
-}: {
-  headerRef: React.RefObject<HTMLDivElement | null>;
-}) {
+export default function AnimatedLogo() {
   const containerRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
   const logoImageRef = useRef<HTMLDivElement>(null);
@@ -20,8 +16,13 @@ export default function AnimatedLogo({
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const { setLogoImageLoaded, setAnimationCompleted, backgroundImageLoaded } =
-    useHeroContext();
+  const {
+    setLogoImageLoaded,
+    setLogoAnimationCompleted,
+    setFlipAnimationCompleted,
+    backgroundImageLoaded,
+    headerRef,
+  } = useHeroContext();
 
   const startAnimation = () => {
     const container = containerRef.current;
@@ -112,8 +113,9 @@ export default function AnimatedLogo({
       `-=${textFadeDuration * 0.05}`
     );
 
+    // Logo animasyonu tamamlandı
     tl.call(() => {
-      setAnimationCompleted(true);
+      setLogoAnimationCompleted(true);
 
       if (headerRef.current && container) {
         const state = Flip.getState(container);
@@ -135,10 +137,14 @@ export default function AnimatedLogo({
           absolute: true,
         });
 
+        // Flip animasyonu tamamlandığında bildir
         Flip.from(state, {
           duration: 0.6,
           ease: "power2.inOut",
           absolute: true,
+          onComplete: () => {
+            setFlipAnimationCompleted(true);
+          },
         });
       }
     });

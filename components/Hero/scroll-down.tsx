@@ -12,11 +12,11 @@ const inter = Inter({
 
 export default function ScrollDown() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { animationCompleted } = useHeroContext();
+  const { allAnimationsCompleted } = useHeroContext();
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container || !animationCompleted) return;
+    if (!container || !allAnimationsCompleted) return;
 
     // Başlangıçta görünmez
     gsap.set(container, {
@@ -36,10 +36,10 @@ export default function ScrollDown() {
     return () => {
       gsap.killTweensOf(container);
     };
-  }, [animationCompleted]);
+  }, [allAnimationsCompleted]);
 
-  // Animasyon tamamlanmadan görünmez
-  if (!animationCompleted) {
+  // Tüm animasyonlar tamamlanmadan görünmez
+  if (!allAnimationsCompleted) {
     return null;
   }
 
