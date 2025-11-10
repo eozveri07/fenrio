@@ -1,0 +1,13 @@
+"use client";
+
+export default function Header({
+  ref,
+}: {
+  ref: React.RefObject<HTMLDivElement | null>;
+}) {
+  return (
+    <div className="fixed top-0 left-0 w-full z-50 h-20 flex items-start justify-between">
+      <div id="logo" ref={ref} />
+    </div>
+  );
+}

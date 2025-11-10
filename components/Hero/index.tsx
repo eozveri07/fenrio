@@ -6,7 +6,11 @@ import ScrollDown from "./scroll-down";
 import { HeroProvider, useHeroContext } from "./context";
 import { useEffect } from "react";
 
-function HeroContent() {
+function HeroContent({
+  headerRef,
+}: {
+  headerRef: React.RefObject<HTMLDivElement | null>;
+}) {
   const { setBackgroundImageLoaded, animationCompleted } = useHeroContext();
 
   useEffect(() => {
@@ -19,7 +23,6 @@ function HeroContent() {
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
     };
-
     scrollToTop();
 
     requestAnimationFrame(() => {
@@ -67,16 +70,20 @@ function HeroContent() {
         />
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_0%,transparent_0%,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.4)_100%)]" />
       </div>
-      <AnimatedLogo />
+      <AnimatedLogo headerRef={headerRef} />
       <ScrollDown />
     </section>
   );
 }
 
-export default function Hero() {
+export default function Hero({
+  headerRef,
+}: {
+  headerRef: React.RefObject<HTMLDivElement | null>;
+}) {
   return (
     <HeroProvider>
-      <HeroContent />
+      <HeroContent headerRef={headerRef} />
     </HeroProvider>
   );
 }

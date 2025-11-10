@@ -7,7 +7,7 @@ export interface RotationInfo {
 }
 
 export const PUZZLE_ROTATION_MAP: Record<string, RotationInfo> = {
-  "0000": { representative: "0000", angle: 0 },
+  // "0000" kodu oluşturulmaz - tüm kenarları düz olan puzzle parçası olamaz
   "0001": { representative: "0001", angle: 0 },
   "0002": { representative: "0002", angle: 0 },
   "0010": { representative: "0001", angle: 90 },

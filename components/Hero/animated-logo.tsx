@@ -3,9 +3,16 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { Flip } from "gsap/Flip";
 import { useHeroContext } from "./context";
 
-export default function AnimatedLogo() {
+gsap.registerPlugin(Flip);
+
+export default function AnimatedLogo({
+  headerRef,
+}: {
+  headerRef: React.RefObject<HTMLDivElement | null>;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
   const logoImageRef = useRef<HTMLDivElement>(null);
@@ -105,9 +112,35 @@ export default function AnimatedLogo() {
       `-=${textFadeDuration * 0.05}`
     );
 
-    // Animasyon tamamlandığında context'i güncelle
     tl.call(() => {
       setAnimationCompleted(true);
+
+      if (headerRef.current && container) {
+        const state = Flip.getState(container);
+
+        headerRef.current.appendChild(container);
+        container.style.height = "80px";
+
+        gsap.to(title, {
+          fontSize: "3rem",
+          duration: 0.6,
+          ease: "power2.inOut",
+          absolute: true,
+        });
+
+        gsap.to(subtitle, {
+          fontSize: "0.75rem",
+          duration: 0.6,
+          ease: "power2.inOut",
+          absolute: true,
+        });
+
+        Flip.from(state, {
+          duration: 0.6,
+          ease: "power2.inOut",
+          absolute: true,
+        });
+      }
     });
 
     return () => {
@@ -167,7 +200,7 @@ export default function AnimatedLogo() {
           </h2>
           <p
             ref={subtitleRef}
-            className="translate-x-full   font-light relative z-10 uppercase text-[#D63E3D] opacity-0 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
+            className="translate-x-full font-light relative z-10 uppercase text-[#D63E3D] opacity-0 drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
           >
             Software Marketing
           </p>

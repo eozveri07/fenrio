@@ -25,6 +25,10 @@ interface PuzzleProps {
 
 // Edge kodunu parça koduna çevir (saat yönünde: üst-sağ-alt-sol)
 // 0 = düz (flat), 1 = çıkıntı (tab), 2 = girinti (blank)
+// Not: "0000" kodu oluşturulmaz - tüm kenarları düz olan puzzle parçası olamaz
+// - Köşe parçalar: 2 kenar flat
+// - Kenar parçalar (köşe değil): 1 kenar flat
+// - İç parçalar: 0 kenar flat (hepsi tab/blank)
 const generatePieceCode = (
   row: number,
   col: number,
@@ -34,11 +38,17 @@ const generatePieceCode = (
 ): string => {
   const key = (r: number, c: number, side: string) => `${r}-${c}-${side}`;
 
+  // Kenar kontrolü
+  const isTopEdge = row === 0;
+  const isBottomEdge = row === rows - 1;
+  const isLeftEdge = col === 0;
+  const isRightEdge = col === cols - 1;
+
   // Kenar parçaları otomatik düz olmalı
-  const top = row === 0 ? "flat" : edgeMap.get(key(row - 1, col, "bottom")) === "tab" ? "blank" : "tab";
-  const right = col === cols - 1 ? "flat" : Math.random() > 0.5 ? "tab" : "blank";
-  const bottom = row === rows - 1 ? "flat" : Math.random() > 0.5 ? "tab" : "blank";
-  const left = col === 0 ? "flat" : edgeMap.get(key(row, col - 1, "right")) === "tab" ? "blank" : "tab";
+  const top = isTopEdge ? "flat" : edgeMap.get(key(row - 1, col, "bottom")) === "tab" ? "blank" : "tab";
+  const right = isRightEdge ? "flat" : Math.random() > 0.5 ? "tab" : "blank";
+  const bottom = isBottomEdge ? "flat" : Math.random() > 0.5 ? "tab" : "blank";
+  const left = isLeftEdge ? "flat" : edgeMap.get(key(row, col - 1, "right")) === "tab" ? "blank" : "tab";
 
   // Edge map'e kaydet
   edgeMap.set(key(row, col, "top"), top);
@@ -53,7 +63,16 @@ const generatePieceCode = (
     return "2"; // blank
   };
 
-  return `${codeToNumber(top)}${codeToNumber(right)}${codeToNumber(bottom)}${codeToNumber(left)}`;
+  const code = `${codeToNumber(top)}${codeToNumber(right)}${codeToNumber(bottom)}${codeToNumber(left)}`;
+  
+  // Güvenlik kontrolü: "0000" kodu oluşturulmamalı
+  if (code === "0000") {
+    console.error(`Invalid puzzle piece code "0000" generated at row ${row}, col ${col}. This should never happen.`);
+    // Fallback: İç parça gibi davran (rastgele tab/blank)
+    return `${codeToNumber("tab")}${codeToNumber("blank")}${codeToNumber("tab")}${codeToNumber("blank")}`;
+  }
+
+  return code;
 };
 
 export default function Puzzle({
