@@ -124,14 +124,14 @@ export default function AnimatedLogo() {
         container.style.height = "80px";
 
         gsap.to(title, {
-          fontSize: "3rem",
+          fontSize: "2.5rem",
           duration: 0.6,
           ease: "power2.inOut",
           absolute: true,
         });
 
         gsap.to(subtitle, {
-          fontSize: "0.75rem",
+          fontSize: "0.6rem",
           duration: 0.6,
           ease: "power2.inOut",
           absolute: true,

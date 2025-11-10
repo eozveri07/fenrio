@@ -65,7 +65,7 @@ function HeroContent() {
           onLoad={() => setBackgroundImageLoaded(true)}
           priority
         />
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_0%,transparent_0%,rgba(0,0,0,0.8)_0%,rgba(0,0,0,0.4)_100%)]" />
+        <div className="absolute inset-0 pointer-events-none bg-black/80" />
       </div>
       <AnimatedLogo />
       <HeroMain />
