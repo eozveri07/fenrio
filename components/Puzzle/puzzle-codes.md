@@ -26,17 +26,13 @@ Parçalar döndürülerek (0°, 90°, 180°, 270°) kullanılabilir, bu sayede a
 ## Kategoriler
 
 ### Köşe Parçaları (1 adet)
-
 - `0000` - Tüm kenarlar düz (4 köşe parçası aynı tip kullanır)
 
 ### Kenar Parçaları (64 adet)
-
 En az bir kenarı 0 (düz) olan parçalar (0000 hariç)
 
 ### İç Parçalar (16 adet)
-
 Hiçbir kenarı 0 olmayan parçalar:
-
 ```
 1111  1112  1121  1122
 1211  1212  1221  1222
@@ -47,7 +43,6 @@ Hiçbir kenarı 0 olmayan parçalar:
 ## PNG Dosya İsimleri (Minimum Gerekli - 24 adet)
 
 Sadece representative kodlar için PNG dosyası gerekli:
-
 ```
 puzzle-piece-0000.png
 puzzle-piece-0001.png

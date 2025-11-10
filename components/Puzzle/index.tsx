@@ -8,7 +8,9 @@ interface PuzzlePiece {
   row: number;
   col: number;
   image: string | React.ReactNode;
+  currentPosition: { x: number; y: number };
   correctPosition: { row: number; col: number };
+  isPlaced: boolean;
   pieceCode: string; // Örnek: "1001" = üst çıkıntı, sağ düz, alt girinti, sol çıkıntı
   rotationInfo: RotationInfo; // Representative kod ve döndürme açısı
 }
@@ -18,6 +20,7 @@ interface PuzzleProps {
   rows?: number;
   cols?: number;
   maskPath?: string; // PNG mask dosyalarının bulunduğu path (varsayılan: "/puzzle-masks/")
+  onComplete?: () => void;
 }
 
 // Edge kodunu parça koduna çevir (saat yönünde: üst-sağ-alt-sol)
@@ -32,22 +35,10 @@ const generatePieceCode = (
   const key = (r: number, c: number, side: string) => `${r}-${c}-${side}`;
 
   // Kenar parçaları otomatik düz olmalı
-  const top =
-    row === 0
-      ? "flat"
-      : edgeMap.get(key(row - 1, col, "bottom")) === "tab"
-      ? "blank"
-      : "tab";
-  const right =
-    col === cols - 1 ? "flat" : Math.random() > 0.5 ? "tab" : "blank";
-  const bottom =
-    row === rows - 1 ? "flat" : Math.random() > 0.5 ? "tab" : "blank";
-  const left =
-    col === 0
-      ? "flat"
-      : edgeMap.get(key(row, col - 1, "right")) === "tab"
-      ? "blank"
-      : "tab";
+  const top = row === 0 ? "flat" : edgeMap.get(key(row - 1, col, "bottom")) === "tab" ? "blank" : "tab";
+  const right = col === cols - 1 ? "flat" : Math.random() > 0.5 ? "tab" : "blank";
+  const bottom = row === rows - 1 ? "flat" : Math.random() > 0.5 ? "tab" : "blank";
+  const left = col === 0 ? "flat" : edgeMap.get(key(row, col - 1, "right")) === "tab" ? "blank" : "tab";
 
   // Edge map'e kaydet
   edgeMap.set(key(row, col, "top"), top);
@@ -62,9 +53,7 @@ const generatePieceCode = (
     return "2"; // blank
   };
 
-  return `${codeToNumber(top)}${codeToNumber(right)}${codeToNumber(
-    bottom
-  )}${codeToNumber(left)}`;
+  return `${codeToNumber(top)}${codeToNumber(right)}${codeToNumber(bottom)}${codeToNumber(left)}`;
 };
 
 export default function Puzzle({
@@ -72,13 +61,17 @@ export default function Puzzle({
   rows = 3,
   cols = 3,
   maskPath = "/puzzle-masks/",
+  onComplete,
 }: PuzzleProps) {
   const [puzzlePieces, setPuzzlePieces] = useState<PuzzlePiece[]>([]);
-  const [containerSize, setContainerSize] = useState({
-    width: 600,
-    height: 600,
-  });
+  const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
+  const [draggedPiece, setDraggedPiece] = useState<number | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(
+    null
+  );
+  const [containerSize, setContainerSize] = useState({ width: 600, height: 600 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const piecesRef = useRef<Map<number, HTMLDivElement>>(new Map());
 
   // Container boyutunu güncelle (padding hariç)
   useEffect(() => {
@@ -111,24 +104,138 @@ export default function Puzzle({
       const row = Math.floor(index / cols);
       const col = index % cols;
       const pieceCode = generatePieceCode(row, col, rows, cols, edgeMap);
-      const rotationInfo = PUZZLE_ROTATION_MAP[pieceCode] || {
-        representative: pieceCode,
-        angle: 0,
-      };
+      const rotationInfo = PUZZLE_ROTATION_MAP[pieceCode] || { representative: pieceCode, angle: 0 };
 
       return {
         id: index,
         row,
         col,
         image: piece,
+        currentPosition: { x: 0, y: 0 },
         correctPosition: { row, col },
+        isPlaced: false,
         pieceCode,
         rotationInfo,
       };
     });
 
-    setPuzzlePieces(newPieces);
+    // Parçaları karıştır ve rastgele pozisyonlara yerleştir
+    const shuffled = [...newPieces];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    // Karıştırılmış parçaları rastgele pozisyonlara yerleştir
+    const containerWidth = containerSize.width;
+    const containerHeight = containerSize.height;
+    const pieceWidth = containerWidth / cols;
+    const pieceHeight = containerHeight / rows;
+
+    shuffled.forEach((piece) => {
+      const randomX = Math.random() * (containerWidth - pieceWidth);
+      const randomY = Math.random() * (containerHeight - pieceHeight);
+      piece.currentPosition = { x: randomX, y: randomY };
+    });
+
+    setPuzzlePieces(shuffled);
   }, [pieces, rows, cols, containerSize]);
+
+  // Mouse event handlers
+  const handleMouseDown = (
+    e: React.MouseEvent<HTMLDivElement>,
+    pieceId: number
+  ) => {
+    e.preventDefault();
+    const piece = puzzlePieces.find((p) => p.id === pieceId);
+    if (!piece || piece.isPlaced) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    setSelectedPiece(pieceId);
+    setDraggedPiece(pieceId);
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (draggedPiece === null || dragOffset === null) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const x = e.clientX - containerRect.left - dragOffset.x;
+    const y = e.clientY - containerRect.top - dragOffset.y;
+
+    setPuzzlePieces((prev) =>
+      prev.map((piece) =>
+        piece.id === draggedPiece
+          ? { ...piece, currentPosition: { x, y } }
+          : piece
+      )
+    );
+  };
+
+  const handleMouseUp = () => {
+    if (draggedPiece === null) return;
+
+    const draggedPieceData = puzzlePieces.find((p) => p.id === draggedPiece);
+    if (!draggedPieceData || draggedPieceData.isPlaced) {
+      setSelectedPiece(null);
+      setDraggedPiece(null);
+      setDragOffset(null);
+      return;
+    }
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Snap kontrolü - doğru pozisyona yakınsa yerleştir
+    const containerWidth = container.offsetWidth;
+    const containerHeight = container.offsetHeight;
+    const pieceWidth = containerWidth / cols;
+    const pieceHeight = containerHeight / rows;
+
+    const correctX = draggedPieceData.correctPosition.col * pieceWidth;
+    const correctY = draggedPieceData.correctPosition.row * pieceHeight;
+
+    const currentX = draggedPieceData.currentPosition.x;
+    const currentY = draggedPieceData.currentPosition.y;
+
+    const threshold = Math.min(pieceWidth, pieceHeight) * 0.25;
+
+    if (
+      Math.abs(currentX - correctX) < threshold &&
+      Math.abs(currentY - correctY) < threshold
+    ) {
+      // Doğru pozisyona yerleştir
+      setPuzzlePieces((prev) => {
+        const updated = prev.map((piece) =>
+          piece.id === draggedPiece
+            ? {
+                ...piece,
+                currentPosition: { x: correctX, y: correctY },
+                isPlaced: true,
+              }
+            : piece
+        );
+
+        // Tüm parçalar yerleştirildi mi kontrol et
+        const allPlaced = updated.every((p) => p.isPlaced);
+        if (allPlaced && onComplete) {
+          setTimeout(() => onComplete(), 100);
+        }
+
+        return updated;
+      });
+    }
+
+    setSelectedPiece(null);
+    setDraggedPiece(null);
+    setDragOffset(null);
+  };
 
   const pieceWidth = containerSize.width / cols;
   const pieceHeight = containerSize.height / rows;
@@ -138,6 +245,9 @@ export default function Puzzle({
       ref={containerRef}
       className="relative w-full h-[600px] bg-gray-100 rounded-lg p-8"
       style={{ overflow: "visible" }}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
     >
       {/* Puzzle pieces */}
       {puzzlePieces.map((piece) => {
@@ -145,18 +255,34 @@ export default function Puzzle({
         const maskUrl = `${maskPath}puzzle-piece-${piece.rotationInfo.representative}.png`;
         const rotationAngle = piece.rotationInfo.angle;
 
+        // Transform: scale + rotation
+        const transform = selectedPiece === piece.id && !piece.isPlaced
+          ? `scale(1.1) rotate(${rotationAngle}deg)`
+          : `rotate(${rotationAngle}deg)`;
+
         return (
           <div
             key={piece.id}
-            className="absolute"
+            ref={(el) => {
+              if (el) piecesRef.current.set(piece.id, el);
+            }}
+            className={`absolute cursor-move ${
+              piece.isPlaced ? "cursor-default" : "cursor-grab active:cursor-grabbing"
+            } ${selectedPiece === piece.id ? "z-50" : "z-10"}`}
             style={{
               width: `${pieceWidth}px`,
               height: `${pieceHeight}px`,
-              left: `${piece.correctPosition.col * pieceWidth}px`,
-              top: `${piece.correctPosition.row * pieceHeight}px`,
-              transform: `rotate(${rotationAngle}deg)`,
+              left: piece.isPlaced
+                ? `${piece.correctPosition.col * pieceWidth}px`
+                : `${piece.currentPosition.x}px`,
+              top: piece.isPlaced
+                ? `${piece.correctPosition.row * pieceHeight}px`
+                : `${piece.currentPosition.y}px`,
+              transform,
               transformOrigin: "center center",
+              transition: piece.isPlaced ? "all 0.3s ease" : "transform 0.2s ease",
             }}
+            onMouseDown={(e) => handleMouseDown(e, piece.id)}
           >
             {/* PNG mask ile puzzle parçası */}
             <div
@@ -180,7 +306,9 @@ export default function Puzzle({
                   style={{
                     objectPosition: `${
                       (piece.correctPosition.col / (cols - 1 || 1)) * 100
-                    }% ${(piece.correctPosition.row / (rows - 1 || 1)) * 100}%`,
+                    }% ${
+                      (piece.correctPosition.row / (rows - 1 || 1)) * 100
+                    }%`,
                   }}
                 />
               ) : (

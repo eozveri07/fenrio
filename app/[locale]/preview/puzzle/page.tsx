@@ -37,12 +37,27 @@ export default function Puzzle() {
     <div className="grid grid-cols-1 gap-8 p-8">
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">Görseller ile Puzzle</h2>
-        <PreviewPuzzle pieces={imagePieces} rows={3} cols={3} />
+        <PreviewPuzzle
+          pieces={imagePieces}
+          rows={3}
+          cols={3}
+          onComplete={() => {
+            setCompleted(true);
+            alert("Puzzle tamamlandı! 🎉");
+          }}
+        />
       </div>
 
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">Div'ler ile Puzzle</h2>
-        <PreviewPuzzle pieces={divPieces} rows={3} cols={3} />
+        <PreviewPuzzle
+          pieces={divPieces}
+          rows={3}
+          cols={3}
+          onComplete={() => {
+            alert("İkinci puzzle tamamlandı! 🎉");
+          }}
+        />
       </div>
 
       {completed && (
