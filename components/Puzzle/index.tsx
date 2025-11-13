@@ -20,11 +20,11 @@ export default function Puzzle() {
     return generatePuzzleGrid(rows, cols);
   }, [rows, cols, regenerateKey]);
 
-  const { relativeStrokeWidth, viewBoxSize } = calculatePieceDimensions(
-    pieceSize,
-    strokeWidth,
-    curvatureIntensity
-  );
+  const { relativeStrokeWidth, viewBoxSize, tabDepth } =
+    calculatePieceDimensions(pieceSize, strokeWidth, curvatureIntensity);
+
+  const svgSize = pieceSize + tabDepth * 2;
+  const overlap = tabDepth;
 
   const regenerateGrid = () => {
     setRegenerateKey((k) => k + 1);
@@ -110,7 +110,7 @@ export default function Puzzle() {
                 type="text"
                 value={fillColor}
                 onChange={(e) => setFillColor(e.target.value)}
-                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg font-mono"
+                className="px-4 py-2 border border-slate-300 rounded-lg font-mono w-full"
               />
             </div>
           </div>
@@ -148,8 +148,11 @@ export default function Puzzle() {
             className="inline-block"
             style={{
               display: "grid",
-              gridTemplateColumns: `repeat(${cols}, 1fr)`,
+              gridTemplateColumns: `repeat(${cols}, ${pieceSize}px)`,
+              gridTemplateRows: `repeat(${rows}, ${pieceSize}px)`,
               gap: 0,
+              overflow: "visible",
+              padding: `${overlap}px`,
             }}
           >
             {puzzleGrid.pieces.map((row, rowIndex) =>
@@ -169,8 +172,11 @@ export default function Puzzle() {
                     viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
                     className="drop-shadow-sm"
                     style={{
-                      width: `${pieceSize}px`,
-                      height: `${pieceSize}px`,
+                      width: `${svgSize}px`,
+                      height: `${svgSize}px`,
+                      marginLeft: `-${overlap}px`,
+                      marginTop: `-${overlap}px`,
+                      overflow: "visible",
                     }}
                   >
                     <defs>
