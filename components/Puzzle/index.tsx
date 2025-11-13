@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FaRandom,
   FaSyncAlt,
@@ -20,6 +20,16 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
+export interface PuzzlePieceComponent {
+  id: string;
+  component: React.ReactNode;
+  selected?: boolean;
+}
+
+interface PuzzleProps {
+  pieces?: PuzzlePieceComponent[];
+}
+
 const icons = [
   FaRandom,
   FaSyncAlt,
@@ -31,7 +41,22 @@ const icons = [
   FaArrowCircleUp,
 ];
 
-export default function Puzzle() {
+const defaultPieces: PuzzlePieceComponent[] = [
+  ...icons.map((Icon, index) => ({
+    id: `icon-${index}`,
+    component: <Icon className="w-16 h-16 text-white" />,
+    selected: false,
+  })),
+  {
+    id: "logo",
+    component: (
+      <h3 className="text-2xl font-semibold text-white uppercase">F logo</h3>
+    ),
+    selected: true,
+  },
+];
+
+export default function Puzzle({ pieces = defaultPieces }: PuzzleProps) {
   const rows = 3;
   const cols = 5;
   const pieceSize = 200;
@@ -72,6 +97,8 @@ export default function Puzzle() {
 
       const centerX = (cols * pieceSize) / 2;
       const centerY = (rows * pieceSize) / 2;
+      const animCenterRow = Math.floor(rows / 2);
+      const animCenterCol = Math.floor(cols / 2);
 
       pieces.forEach((piece) => {
         const rowIndex = parseInt(piece.getAttribute("data-row") || "0");
@@ -81,10 +108,14 @@ export default function Puzzle() {
         const finalY = rowIndex * pieceSize + overlap;
 
         const distanceFromCenter = Math.sqrt(
-          Math.pow(colIndex - 1, 2) + Math.pow(rowIndex - 1, 2)
+          Math.pow(colIndex - animCenterCol, 2) +
+            Math.pow(rowIndex - animCenterRow, 2)
         );
 
-        const angle = Math.atan2(rowIndex - 1, colIndex - 1);
+        const angle = Math.atan2(
+          rowIndex - animCenterRow,
+          colIndex - animCenterCol
+        );
         const scatterDistance = 400 + distanceFromCenter * 150;
         const scatterY = -300 - distanceFromCenter * 100;
 
@@ -132,12 +163,23 @@ export default function Puzzle() {
     };
   }, [puzzleGrid, rows, cols, pieceSize, overlap]);
 
-  const getIconForPiece = (rowIndex: number, colIndex: number) => {
-    if (rowIndex === 1 && colIndex === 1) {
-      return null;
+  const centerRow = Math.floor(rows / 2);
+  const centerCol = Math.floor(cols / 2);
+  const selectedPiece = pieces.find((p) => p.selected);
+  const otherPieces = pieces.filter((p) => !p.selected);
+
+  const getComponentForPiece = (rowIndex: number, colIndex: number) => {
+    const isCenter = rowIndex === centerRow && colIndex === centerCol;
+
+    if (isCenter && selectedPiece) {
+      return selectedPiece.component;
     }
-    const index = rowIndex * cols + colIndex;
-    return icons[index % icons.length];
+
+    const pieceIndex = rowIndex * cols + colIndex;
+    const nonCenterIndex =
+      pieceIndex > centerRow * cols + centerCol ? pieceIndex - 1 : pieceIndex;
+
+    return otherPieces[nonCenterIndex % otherPieces.length]?.component || null;
   };
 
   return (
@@ -167,9 +209,8 @@ export default function Puzzle() {
                 curvatureIntensity
               );
 
-              const isCenter = rowIndex === 1 && colIndex === 1;
               const key = `${rowIndex}-${colIndex}`;
-              const IconComponent = getIconForPiece(rowIndex, colIndex);
+              const pieceComponent = getComponentForPiece(rowIndex, colIndex);
 
               return (
                 <svg
@@ -226,7 +267,7 @@ export default function Puzzle() {
                     />
                   </g>
 
-                  {isCenter ? (
+                  {pieceComponent && (
                     <foreignObject
                       x={overlap}
                       y={overlap}
@@ -234,23 +275,10 @@ export default function Puzzle() {
                       height={pieceSize}
                     >
                       <div className="w-full h-full flex items-center justify-center">
-                        <p className="text-2xl font-semibold text-white uppercase text-center">
-                          fenrio Logo
-                        </p>
+                        {pieceComponent}
                       </div>
                     </foreignObject>
-                  ) : IconComponent ? (
-                    <foreignObject
-                      x={overlap}
-                      y={overlap}
-                      width={pieceSize}
-                      height={pieceSize}
-                    >
-                      <div className="w-full h-full flex items-center justify-center">
-                        <IconComponent className="w-16 h-16 text-white" />
-                      </div>
-                    </foreignObject>
-                  ) : null}
+                  )}
                 </svg>
               );
             })
