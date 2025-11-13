@@ -22,9 +22,15 @@ const PuzzlePieceGenerator = () => {
   };
 
   const pathData = generatePuzzlePiecePath(code, size, curvatureIntensity);
-  const viewBoxSize = size * 1.5;
   // Stroke width'i boyuta göre orantılı yap (200px için 2px = 1% oranında)
   const relativeStrokeWidth = (strokeWidth / 200) * size;
+  // Tab depth'i hesapla (çıkıntılar için)
+  const tabDepth = size * curvatureIntensity;
+  // ViewBox'ı stroke ve çıkıntıları da içerecek şekilde ayarla
+  // Stroke yarı yarıya içeri ve dışarı doğru genişler, bu yüzden yarısını ekliyoruz
+  // Tab depth'i de ekliyoruz çünkü çıkıntılar dışarı doğru uzanıyor
+  const padding = relativeStrokeWidth / 2 + tabDepth;
+  const viewBoxSize = size + padding * 2;
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -131,19 +137,19 @@ const PuzzlePieceGenerator = () => {
             Önizleme
           </h2>
 
-          <div className="flex items-center justify-center bg-slate-50 rounded-lg p-8">
+          <div className="flex items-center justify-center bg-slate-50 rounded-lg p-4">
             <svg
               id="puzzle-svg"
               viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
               className="max-w-full h-auto drop-shadow-xl"
-              style={{ width: "100%", maxWidth: "400px" }}
+              style={{ width: "100%" }}
             >
               <defs>
                 <filter
                   id="shadow"
                   x="-50%"
                   y="-50%"
-                  width="200%"
+                  width="2010%"
                   height="200%"
                 >
                   <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
