@@ -11,19 +11,15 @@ export function generatePuzzlePiecePath(
 
   let path = `M 0 0`;
 
-  // Top edge (0)
   path += drawTopEdge(edges[0], size, tabWidth, tabDepth);
   path += ` L ${size} 0`;
 
-  // Right edge (1)
   path += drawRightEdge(edges[1], size, tabWidth, tabDepth);
   path += ` L ${size} ${size}`;
 
-  // Bottom edge (2)
   path += drawBottomEdge(edges[2], size, tabWidth, tabDepth);
   path += ` L 0 ${size}`;
 
-  // Left edge (3)
   path += drawLeftEdge(edges[3], size, tabWidth, tabDepth);
   path += ` Z`;
 
@@ -41,7 +37,6 @@ function drawTopEdge(
   }
 
   const center = size / 2;
-  // 1 = Tab (çıkıntı) = yukarı (negatif y), 2 = Socket (girinti) = aşağı (pozitif y)
   const direction = type === "1" ? -1 : 1;
   const halfTab = tabWidth / 2;
 
@@ -52,19 +47,8 @@ function drawTopEdge(
 
   return (
     ` L ${tabStart.toFixed(2)} 0` +
-    ` C ${(tabStart - (tabEnd - tabStart) * 0.3).toFixed(
-      2
-    )} ${controlDepth.toFixed(2)}, ${(
-      tabStart +
-      (tabEnd - tabStart) * 0.1
-    ).toFixed(2)} ${depth.toFixed(2)}, ${((tabStart + tabEnd) / 2).toFixed(
-      2
-    )} ${depth.toFixed(2)}` +
-    ` C ${(tabEnd - (tabEnd - tabStart) * 0.1).toFixed(2)} ${depth.toFixed(
-      2
-    )}, ${(tabEnd + (tabEnd - tabStart) * 0.3).toFixed(
-      2
-    )} ${controlDepth.toFixed(2)}, ${tabEnd.toFixed(2)} 0`
+    ` C ${(tabStart - (tabEnd - tabStart) * 0.3).toFixed(2)} ${controlDepth.toFixed(2)}, ${(tabStart + (tabEnd - tabStart) * 0.1).toFixed(2)} ${depth.toFixed(2)}, ${((tabStart + tabEnd) / 2).toFixed(2)} ${depth.toFixed(2)}` +
+    ` C ${(tabEnd - (tabEnd - tabStart) * 0.1).toFixed(2)} ${depth.toFixed(2)}, ${(tabEnd + (tabEnd - tabStart) * 0.3).toFixed(2)} ${controlDepth.toFixed(2)}, ${tabEnd.toFixed(2)} 0`
   );
 }
 
@@ -79,7 +63,6 @@ function drawRightEdge(
   }
 
   const center = size / 2;
-  // 1 = Tab (çıkıntı) = sağa (pozitif x), 2 = Socket (girinti) = sola (negatif x)
   const direction = type === "1" ? 1 : -1;
   const halfTab = tabWidth / 2;
 
@@ -90,23 +73,8 @@ function drawRightEdge(
 
   return (
     ` L ${size} ${tabStart.toFixed(2)}` +
-    ` C ${(size + controlDepth).toFixed(2)} ${(
-      tabStart -
-      (tabEnd - tabStart) * 0.3
-    ).toFixed(2)}, ${(size + depth).toFixed(2)} ${(
-      tabStart +
-      (tabEnd - tabStart) * 0.1
-    ).toFixed(2)}, ${(size + depth).toFixed(2)} ${(
-      (tabStart + tabEnd) /
-      2
-    ).toFixed(2)}` +
-    ` C ${(size + depth).toFixed(2)} ${(
-      tabEnd -
-      (tabEnd - tabStart) * 0.1
-    ).toFixed(2)}, ${(size + controlDepth).toFixed(2)} ${(
-      tabEnd +
-      (tabEnd - tabStart) * 0.3
-    ).toFixed(2)}, ${size} ${tabEnd.toFixed(2)}`
+    ` C ${(size + controlDepth).toFixed(2)} ${(tabStart - (tabEnd - tabStart) * 0.3).toFixed(2)}, ${(size + depth).toFixed(2)} ${(tabStart + (tabEnd - tabStart) * 0.1).toFixed(2)}, ${(size + depth).toFixed(2)} ${((tabStart + tabEnd) / 2).toFixed(2)}` +
+    ` C ${(size + depth).toFixed(2)} ${(tabEnd - (tabEnd - tabStart) * 0.1).toFixed(2)}, ${(size + controlDepth).toFixed(2)} ${(tabEnd + (tabEnd - tabStart) * 0.3).toFixed(2)}, ${size} ${tabEnd.toFixed(2)}`
   );
 }
 
@@ -121,7 +89,6 @@ function drawBottomEdge(
   }
 
   const center = size / 2;
-  // 1 = Tab (çıkıntı) = aşağı (pozitif y), 2 = Socket (girinti) = yukarı (negatif y)
   const direction = type === "1" ? 1 : -1;
   const halfTab = tabWidth / 2;
 
@@ -132,18 +99,8 @@ function drawBottomEdge(
 
   return (
     ` L ${tabEnd.toFixed(2)} ${size}` +
-    ` C ${(tabEnd + (tabEnd - tabStart) * 0.3).toFixed(2)} ${(
-      size + controlDepth
-    ).toFixed(2)}, ${(tabEnd - (tabEnd - tabStart) * 0.1).toFixed(2)} ${(
-      size + depth
-    ).toFixed(2)}, ${((tabStart + tabEnd) / 2).toFixed(2)} ${(
-      size + depth
-    ).toFixed(2)}` +
-    ` C ${(tabStart + (tabEnd - tabStart) * 0.1).toFixed(2)} ${(
-      size + depth
-    ).toFixed(2)}, ${(tabStart - (tabEnd - tabStart) * 0.3).toFixed(2)} ${(
-      size + controlDepth
-    ).toFixed(2)}, ${tabStart.toFixed(2)} ${size}`
+    ` C ${(tabEnd + (tabEnd - tabStart) * 0.3).toFixed(2)} ${(size + controlDepth).toFixed(2)}, ${(tabEnd - (tabEnd - tabStart) * 0.1).toFixed(2)} ${(size + depth).toFixed(2)}, ${((tabStart + tabEnd) / 2).toFixed(2)} ${(size + depth).toFixed(2)}` +
+    ` C ${(tabStart + (tabEnd - tabStart) * 0.1).toFixed(2)} ${(size + depth).toFixed(2)}, ${(tabStart - (tabEnd - tabStart) * 0.3).toFixed(2)} ${(size + controlDepth).toFixed(2)}, ${tabStart.toFixed(2)} ${size}`
   );
 }
 
@@ -158,7 +115,6 @@ function drawLeftEdge(
   }
 
   const center = size / 2;
-  // 1 = Tab (çıkıntı) = sola (negatif x), 2 = Socket (girinti) = sağa (pozitif x)
   const direction = type === "1" ? -1 : 1;
   const halfTab = tabWidth / 2;
 
@@ -169,20 +125,7 @@ function drawLeftEdge(
 
   return (
     ` L 0 ${tabEnd.toFixed(2)}` +
-    ` C ${controlDepth.toFixed(2)} ${(
-      tabEnd +
-      (tabEnd - tabStart) * 0.3
-    ).toFixed(2)}, ${depth.toFixed(2)} ${(
-      tabEnd -
-      (tabEnd - tabStart) * 0.1
-    ).toFixed(2)}, ${depth.toFixed(2)} ${((tabStart + tabEnd) / 2).toFixed(
-      2
-    )}` +
-    ` C ${depth.toFixed(2)} ${(tabStart + (tabEnd - tabStart) * 0.1).toFixed(
-      2
-    )}, ${controlDepth.toFixed(2)} ${(
-      tabStart -
-      (tabEnd - tabStart) * 0.3
-    ).toFixed(2)}, 0 ${tabStart.toFixed(2)}`
+    ` C ${controlDepth.toFixed(2)} ${(tabEnd + (tabEnd - tabStart) * 0.3).toFixed(2)}, ${depth.toFixed(2)} ${(tabEnd - (tabEnd - tabStart) * 0.1).toFixed(2)}, ${depth.toFixed(2)} ${((tabStart + tabEnd) / 2).toFixed(2)}` +
+    ` C ${depth.toFixed(2)} ${(tabStart + (tabEnd - tabStart) * 0.1).toFixed(2)}, ${controlDepth.toFixed(2)} ${(tabStart - (tabEnd - tabStart) * 0.3).toFixed(2)}, 0 ${tabStart.toFixed(2)}`
   );
 }

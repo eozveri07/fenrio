@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { generatePuzzlePiecePath } from "./utils/puzzleGenerator";
+import {
+  generatePuzzlePiecePath,
+  calculatePieceDimensions,
+  getEdgeLabel,
+} from "./utils/puzzlePieceGenerator";
 import { FaSyncAlt } from "react-icons/fa";
 
 const PuzzlePieceGenerator = () => {
@@ -22,15 +26,11 @@ const PuzzlePieceGenerator = () => {
   };
 
   const pathData = generatePuzzlePiecePath(code, size, curvatureIntensity);
-  // Stroke width'i boyuta göre orantılı yap (200px için 2px = 1% oranında)
-  const relativeStrokeWidth = (strokeWidth / 200) * size;
-  // Tab depth'i hesapla (çıkıntılar için)
-  const tabDepth = size * curvatureIntensity;
-  // ViewBox'ı stroke ve çıkıntıları da içerecek şekilde ayarla
-  // Stroke yarı yarıya içeri ve dışarı doğru genişler, bu yüzden yarısını ekliyoruz
-  // Tab depth'i de ekliyoruz çünkü çıkıntılar dışarı doğru uzanıyor
-  const padding = relativeStrokeWidth / 2 + tabDepth;
-  const viewBoxSize = size + padding * 2;
+  const { relativeStrokeWidth, viewBoxSize } = calculatePieceDimensions(
+    size,
+    strokeWidth,
+    curvatureIntensity
+  );
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -233,18 +233,5 @@ const PuzzlePieceGenerator = () => {
     </div>
   );
 };
-
-function getEdgeLabel(digit: string): string {
-  switch (digit) {
-    case "0":
-      return "Düz";
-    case "1":
-      return "Çıkıntı";
-    case "2":
-      return "Girinti";
-    default:
-      return "Bilinmeyen";
-  }
-}
 
 export default PuzzlePieceGenerator;
