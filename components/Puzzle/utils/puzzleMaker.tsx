@@ -144,6 +144,47 @@ function generatePieceCode(
   return edges.join("");
 }
 
+function fixPieceCompatibility(
+  row: number,
+  col: number,
+  grid: (PuzzlePiece | null)[][],
+  rows: number,
+  cols: number
+): void {
+  const piece = grid[row][col];
+  if (!piece) return;
+
+  if (row < rows - 1) {
+    const bottomPiece = grid[row + 1]?.[col];
+    if (bottomPiece) {
+      const compatibleTopEdge = getCompatibleEdge(piece.code[2] as EdgeType);
+      if (bottomPiece.code[0] !== compatibleTopEdge) {
+        let bottomEdges = bottomPiece.code.split("") as EdgeType[];
+        bottomEdges[0] = compatibleTopEdge;
+        grid[row + 1][col] = {
+          ...bottomPiece,
+          code: bottomEdges.join(""),
+        };
+      }
+    }
+  }
+
+  if (col < cols - 1) {
+    const rightPiece = grid[row]?.[col + 1];
+    if (rightPiece) {
+      const compatibleLeftEdge = getCompatibleEdge(piece.code[1] as EdgeType);
+      if (rightPiece.code[3] !== compatibleLeftEdge) {
+        let rightEdges = rightPiece.code.split("") as EdgeType[];
+        rightEdges[3] = compatibleLeftEdge;
+        grid[row][col + 1] = {
+          ...rightPiece,
+          code: rightEdges.join(""),
+        };
+      }
+    }
+  }
+}
+
 export function generatePuzzleGrid(rows: number, cols: number): PuzzleGrid {
   const grid: (PuzzlePiece | null)[][] = Array(rows)
     .fill(null)
@@ -157,6 +198,12 @@ export function generatePuzzleGrid(rows: number, cols: number): PuzzleGrid {
         row,
         col,
       };
+    }
+  }
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      fixPieceCompatibility(row, col, grid, rows, cols);
     }
   }
 
