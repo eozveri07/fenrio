@@ -162,6 +162,9 @@ export default function Puzzle() {
 
                 return (
                   <svg
+                    data-code={piece.code}
+                    data-row={rowIndex}
+                    data-col={colIndex}
                     key={`${rowIndex}-${colIndex}`}
                     viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
                     className="drop-shadow-sm"

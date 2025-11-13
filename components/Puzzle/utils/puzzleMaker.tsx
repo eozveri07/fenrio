@@ -19,7 +19,7 @@ function getCompatibleEdge(edge: EdgeType): EdgeType {
 }
 
 function getRandomEdge(): EdgeType {
-  const random = Math.floor(Math.random() * 3);
+  const random = Math.floor(Math.random() * 2) + 1;
   return random.toString() as EdgeType;
 }
 
@@ -179,4 +179,3 @@ export function getPuzzlePiece(
   }
   return grid.pieces[row][col];
 }
-
