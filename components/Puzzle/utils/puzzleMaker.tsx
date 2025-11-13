@@ -28,7 +28,8 @@ function generatePieceCode(
   col: number,
   grid: (PuzzlePiece | null)[][],
   rows: number,
-  cols: number
+  cols: number,
+  centerPieceCode?: string | null
 ): string {
   let edges: EdgeType[] = ["0", "0", "0", "0"];
 
@@ -39,12 +40,22 @@ function generatePieceCode(
   const isCorner = (isTopRow || isBottomRow) && (isLeftCol || isRightCol);
   const isEdge = isTopRow || isBottomRow || isLeftCol || isRightCol;
 
+  const centerRow = Math.floor(rows / 2);
+  const centerCol = Math.floor(cols / 2);
+  const isCenter = row === centerRow && col === centerCol;
+
+  if (isCenter && centerPieceCode) {
+    return centerPieceCode;
+  }
+
   if (isTopRow) {
     edges[0] = "0";
   } else {
     const topPiece = grid[row - 1]?.[col];
     if (topPiece) {
       edges[0] = getCompatibleEdge(topPiece.code[2] as EdgeType);
+    } else if (row === centerRow + 1 && col === centerCol && centerPieceCode) {
+      edges[0] = getCompatibleEdge(centerPieceCode[2] as EdgeType);
     } else {
       edges[0] = getRandomEdge();
     }
@@ -53,13 +64,21 @@ function generatePieceCode(
   if (isRightCol) {
     edges[1] = "0";
   } else {
-    edges[1] = getRandomEdge();
+    if (row === centerRow && col === centerCol - 1 && centerPieceCode) {
+      edges[1] = getCompatibleEdge(centerPieceCode[3] as EdgeType);
+    } else {
+      edges[1] = getRandomEdge();
+    }
   }
 
   if (isBottomRow) {
     edges[2] = "0";
   } else {
-    edges[2] = getRandomEdge();
+    if (row === centerRow - 1 && col === centerCol && centerPieceCode) {
+      edges[2] = getCompatibleEdge(centerPieceCode[0] as EdgeType);
+    } else {
+      edges[2] = getRandomEdge();
+    }
   }
 
   if (isLeftCol) {
@@ -68,6 +87,8 @@ function generatePieceCode(
     const leftPiece = grid[row]?.[col - 1];
     if (leftPiece) {
       edges[3] = getCompatibleEdge(leftPiece.code[1] as EdgeType);
+    } else if (row === centerRow && col === centerCol + 1 && centerPieceCode) {
+      edges[3] = getCompatibleEdge(centerPieceCode[1] as EdgeType);
     } else {
       edges[3] = getRandomEdge();
     }
@@ -149,10 +170,14 @@ function fixPieceCompatibility(
   col: number,
   grid: (PuzzlePiece | null)[][],
   rows: number,
-  cols: number
+  cols: number,
+  centerPieceCode?: string | null
 ): void {
   const piece = grid[row][col];
   if (!piece) return;
+
+  const centerRow = Math.floor(rows / 2);
+  const centerCol = Math.floor(cols / 2);
 
   if (row < rows - 1) {
     const bottomPiece = grid[row + 1]?.[col];
@@ -183,16 +208,79 @@ function fixPieceCompatibility(
       }
     }
   }
+
+  if (centerPieceCode && row === centerRow && col === centerCol) {
+    if (row > 0) {
+      const topPiece = grid[row - 1]?.[col];
+      if (topPiece && topPiece.code[2] !== "2") {
+        let topEdges = topPiece.code.split("") as EdgeType[];
+        topEdges[2] = "2";
+        grid[row - 1][col] = {
+          ...topPiece,
+          code: topEdges.join(""),
+        };
+      }
+    }
+    if (row < rows - 1) {
+      const bottomPiece = grid[row + 1]?.[col];
+      if (bottomPiece && bottomPiece.code[0] !== "2") {
+        let bottomEdges = bottomPiece.code.split("") as EdgeType[];
+        bottomEdges[0] = "2";
+        grid[row + 1][col] = {
+          ...bottomPiece,
+          code: bottomEdges.join(""),
+        };
+      }
+    }
+    if (col > 0) {
+      const leftPiece = grid[row]?.[col - 1];
+      if (leftPiece && leftPiece.code[1] !== "2") {
+        let leftEdges = leftPiece.code.split("") as EdgeType[];
+        leftEdges[1] = "2";
+        grid[row][col - 1] = {
+          ...leftPiece,
+          code: leftEdges.join(""),
+        };
+      }
+    }
+    if (col < cols - 1) {
+      const rightPiece = grid[row]?.[col + 1];
+      if (rightPiece && rightPiece.code[3] !== "2") {
+        let rightEdges = rightPiece.code.split("") as EdgeType[];
+        rightEdges[3] = "2";
+        grid[row][col + 1] = {
+          ...rightPiece,
+          code: rightEdges.join(""),
+        };
+      }
+    }
+  }
 }
 
-export function generatePuzzleGrid(rows: number, cols: number): PuzzleGrid {
+export function generatePuzzleGrid(
+  rows: number,
+  cols: number,
+  hasCenterPiece: boolean = false
+): PuzzleGrid {
   const grid: (PuzzlePiece | null)[][] = Array(rows)
     .fill(null)
     .map(() => Array(cols).fill(null));
 
+  const centerRow = Math.floor(rows / 2);
+  const centerCol = Math.floor(cols / 2);
+  const hasCenter = rows % 2 === 1 && cols % 2 === 1;
+  const centerPieceCode = hasCenter && hasCenterPiece ? "1111" : null;
+
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
-      const code = generatePieceCode(row, col, grid, rows, cols);
+      const code = generatePieceCode(
+        row,
+        col,
+        grid,
+        rows,
+        cols,
+        centerPieceCode
+      );
       grid[row][col] = {
         code,
         row,
@@ -203,7 +291,7 @@ export function generatePuzzleGrid(rows: number, cols: number): PuzzleGrid {
 
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
-      fixPieceCompatibility(row, col, grid, rows, cols);
+      fixPieceCompatibility(row, col, grid, rows, cols, centerPieceCode);
     }
   }
 

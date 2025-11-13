@@ -33,7 +33,7 @@ const icons = [
 
 export default function Puzzle() {
   const rows = 3;
-  const cols = 3;
+  const cols = 5;
   const pieceSize = 200;
   const fillColor = "#3b82f6";
   const strokeWidth = 1;
@@ -50,7 +50,7 @@ export default function Puzzle() {
 
   useEffect(() => {
     if (mounted) {
-      setPuzzleGrid(generatePuzzleGrid(rows, cols));
+      setPuzzleGrid(generatePuzzleGrid(rows, cols, true));
     }
   }, [mounted]);
 
