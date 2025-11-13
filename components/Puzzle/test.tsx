@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { generatePuzzleGrid } from "./utils/puzzleMaker";
 import { generatePuzzlePiecePath } from "./utils/puzzleGenerator";
 import { calculatePieceDimensions } from "./utils/puzzlePieceGenerator";
 import { FaSyncAlt, FaRandom } from "react-icons/fa";
+import type { PuzzleGrid } from "./utils/puzzleMaker";
 
 export default function Puzzle() {
   const [rows, setRows] = useState(9);
@@ -18,11 +19,18 @@ export default function Puzzle() {
     Map<string, { x: number; y: number; rotation: number }>
   >(new Map());
   const [isScattered, setIsScattered] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [puzzleGrid, setPuzzleGrid] = useState<PuzzleGrid | null>(null);
 
-  // Puzzle grid'i oluştur
-  const puzzleGrid = useMemo(() => {
-    return generatePuzzleGrid(rows, cols);
-  }, [rows, cols, regenerateKey]);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      setPuzzleGrid(generatePuzzleGrid(rows, cols));
+    }
+  }, [rows, cols, regenerateKey, mounted]);
 
   const { relativeStrokeWidth, viewBoxSize, tabDepth } =
     calculatePieceDimensions(pieceSize, strokeWidth, curvatureIntensity);
@@ -37,6 +45,8 @@ export default function Puzzle() {
   };
 
   const scatterPieces = useCallback(() => {
+    if (!puzzleGrid) return;
+    
     const newPositions = new Map<
       string,
       { x: number; y: number; rotation: number }
@@ -198,18 +208,23 @@ export default function Puzzle() {
 
       <div className="bg-white rounded-xl shadow-lg p-8">
         <div className="flex items-center justify-center bg-slate-50 rounded-lg p-8 overflow-auto">
-          <div
-            className="inline-block relative"
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${cols}, ${pieceSize}px)`,
-              gridTemplateRows: `repeat(${rows}, ${pieceSize}px)`,
-              gap: 0,
-              overflow: "visible",
-              padding: `${overlap}px`,
-            }}
-          >
-            {puzzleGrid.pieces.map((row, rowIndex) =>
+          {!puzzleGrid ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-slate-500">Yükleniyor...</div>
+            </div>
+          ) : (
+            <div
+              className="inline-block relative"
+              style={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${cols}, ${pieceSize}px)`,
+                gridTemplateRows: `repeat(${rows}, ${pieceSize}px)`,
+                gap: 0,
+                overflow: "visible",
+                padding: `${overlap}px`,
+              }}
+            >
+              {puzzleGrid.pieces.map((row, rowIndex) =>
               row.map((piece, colIndex) => {
                 const pathData = generatePuzzlePiecePath(
                   piece.code,
@@ -284,7 +299,8 @@ export default function Puzzle() {
                 );
               })
             )}
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-6 bg-slate-50 rounded-lg p-4">
