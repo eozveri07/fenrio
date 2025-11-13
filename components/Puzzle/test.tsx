@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
-import { generatePuzzleGrid } from "./utils/puzzleMaker";
-import { generatePuzzlePiecePath } from "./utils/puzzleGenerator";
+import { useState, useCallback, useEffect } from "react";
+import { generatePuzzleGrid, type PuzzleGrid } from "./utils/puzzleMaker";
 import { calculatePieceDimensions } from "./utils/puzzlePieceGenerator";
 import { FaSyncAlt, FaRandom } from "react-icons/fa";
-import type { PuzzleGrid } from "./utils/puzzleMaker";
+import PuzzlePiece from "./PuzzlePiece";
 
 export default function Puzzle() {
   const [rows, setRows] = useState(9);
@@ -32,10 +31,12 @@ export default function Puzzle() {
     }
   }, [rows, cols, regenerateKey, mounted]);
 
-  const { relativeStrokeWidth, viewBoxSize, tabDepth } =
-    calculatePieceDimensions(pieceSize, strokeWidth, curvatureIntensity);
+  const { tabDepth } = calculatePieceDimensions(
+    pieceSize,
+    strokeWidth,
+    curvatureIntensity
+  );
 
-  const svgSize = pieceSize + tabDepth * 2;
   const overlap = tabDepth;
 
   const regenerateGrid = () => {
@@ -225,80 +226,41 @@ export default function Puzzle() {
               }}
             >
               {puzzleGrid.pieces.map((row, rowIndex) =>
-              row.map((piece, colIndex) => {
-                const pathData = generatePuzzlePiecePath(
-                  piece.code,
-                  pieceSize,
-                  curvatureIntensity
-                );
+                row.map((piece, colIndex) => {
+                  const key = `${rowIndex}-${colIndex}`;
+                  const position = scatteredPositions.get(key);
+                  const baseX = colIndex * pieceSize + overlap;
+                  const baseY = rowIndex * pieceSize + overlap;
 
-                const key = `${rowIndex}-${colIndex}`;
-                const position = scatteredPositions.get(key);
-                const baseX = colIndex * pieceSize + overlap;
-                const baseY = rowIndex * pieceSize + overlap;
-
-                return (
-                  <svg
-                    data-code={piece.code}
-                    data-row={rowIndex}
-                    data-col={colIndex}
-                    key={key}
-                    viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
-                    className="drop-shadow-sm"
-                    style={{
-                      width: `${svgSize}px`,
-                      height: `${svgSize}px`,
-                      marginLeft: `-${overlap}px`,
-                      marginTop: `-${overlap}px`,
-                      overflow: "visible",
-                      position: position ? "absolute" : "relative",
-                      left: position ? `${baseX + position.x}px` : "auto",
-                      top: position ? `${baseY + position.y}px` : "auto",
-                      transform: position
-                        ? `translate(-50%, -50%) rotate(${position.rotation}deg)`
-                        : "none",
-                      transformOrigin: "center center",
-                      transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
-                      zIndex: position ? 10 : 1,
-                      cursor: position ? "grab" : "default",
-                    }}
-                  >
-                    <defs>
-                      <linearGradient
-                        id={`gradient-${rowIndex}-${colIndex}`}
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
-                      >
-                        <stop
-                          offset="0%"
-                          style={{ stopColor: fillColor, stopOpacity: 1 }}
-                        />
-                        <stop
-                          offset="100%"
-                          style={{ stopColor: fillColor, stopOpacity: 0.7 }}
-                        />
-                      </linearGradient>
-                    </defs>
-
-                    <g
-                      transform={`translate(${viewBoxSize / 2}, ${
-                        viewBoxSize / 2
-                      }) translate(${-pieceSize / 2}, ${-pieceSize / 2})`}
+                  return (
+                    <div
+                      key={key}
+                      style={{
+                        position: position ? "absolute" : "relative",
+                        left: position ? `${baseX + position.x}px` : "auto",
+                        top: position ? `${baseY + position.y}px` : "auto",
+                        transform: position
+                          ? `translate(-50%, -50%) rotate(${position.rotation}deg)`
+                          : "none",
+                        transformOrigin: "center center",
+                        transition: "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                        zIndex: position ? 10 : 1,
+                        cursor: position ? "grab" : "default",
+                      }}
                     >
-                      <path
-                        d={pathData}
-                        fill={`url(#gradient-${rowIndex}-${colIndex})`}
-                        stroke="#1e293b"
-                        strokeWidth={relativeStrokeWidth}
-                        strokeLinejoin="round"
+                      <PuzzlePiece
+                        code={piece.code}
+                        rowIndex={rowIndex}
+                        colIndex={colIndex}
+                        pieceSize={pieceSize}
+                        fillColor={fillColor}
+                        strokeWidth={strokeWidth}
+                        curvatureIntensity={curvatureIntensity}
                       />
-                    </g>
-                  </svg>
-                );
-              })
-            )}
+                    </div>
+                  );
+                })
+              )}
             </div>
           )}
         </div>

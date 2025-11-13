@@ -1,10 +1,7 @@
 import { useState } from "react";
-import {
-  generatePuzzlePiecePath,
-  calculatePieceDimensions,
-  getEdgeLabel,
-} from "./utils/puzzlePieceGenerator";
+import { getEdgeLabel } from "./utils/puzzlePieceGenerator";
 import { FaSyncAlt } from "react-icons/fa";
+import PuzzlePiece from "./PuzzlePiece";
 
 const PuzzlePieceGenerator = () => {
   const [code, setCode] = useState("0211");
@@ -25,12 +22,6 @@ const PuzzlePieceGenerator = () => {
     setCode(random);
   };
 
-  const pathData = generatePuzzlePiecePath(code, size, curvatureIntensity);
-  const { relativeStrokeWidth, viewBoxSize } = calculatePieceDimensions(
-    size,
-    strokeWidth,
-    curvatureIntensity
-  );
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -138,63 +129,17 @@ const PuzzlePieceGenerator = () => {
           </h2>
 
           <div className="flex items-center justify-center bg-slate-50 rounded-lg p-4">
-            <svg
-              id="puzzle-svg"
-              viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
-              className="max-w-full h-auto drop-shadow-xl"
-              style={{ width: "100%" }}
-            >
-              <defs>
-                <filter
-                  id="shadow"
-                  x="-50%"
-                  y="-50%"
-                  width="2010%"
-                  height="200%"
-                >
-                  <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
-                  <feOffset dx="2" dy="2" result="offsetblur" />
-                  <feComponentTransfer>
-                    <feFuncA type="linear" slope="0.3" />
-                  </feComponentTransfer>
-                  <feMerge>
-                    <feMergeNode />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <linearGradient
-                  id="gradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="100%"
-                >
-                  <stop
-                    offset="0%"
-                    style={{ stopColor: fillColor, stopOpacity: 1 }}
-                  />
-                  <stop
-                    offset="100%"
-                    style={{ stopColor: fillColor, stopOpacity: 0.7 }}
-                  />
-                </linearGradient>
-              </defs>
-
-              <g
-                transform={`translate(${viewBoxSize / 2}, ${
-                  viewBoxSize / 2
-                }) translate(${-size / 2}, ${-size / 2})`}
-              >
-                <path
-                  d={pathData}
-                  fill="url(#gradient)"
-                  stroke="#1e293b"
-                  strokeWidth={relativeStrokeWidth}
-                  strokeLinejoin="round"
-                  filter="url(#shadow)"
-                />
-              </g>
-            </svg>
+            <div className="max-w-full">
+              <PuzzlePiece
+                code={code}
+                rowIndex={0}
+                colIndex={0}
+                pieceSize={size}
+                fillColor={fillColor}
+                strokeWidth={strokeWidth}
+                curvatureIntensity={curvatureIntensity}
+              />
+            </div>
           </div>
 
           <div className="mt-6 bg-slate-50 rounded-lg p-4">

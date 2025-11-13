@@ -11,10 +11,9 @@ import {
   FaArrowCircleDown,
   FaArrowCircleUp,
 } from "react-icons/fa";
-import { generatePuzzleGrid } from "./utils/puzzleMaker";
-import { generatePuzzlePiecePath } from "./utils/puzzleGenerator";
+import { generatePuzzleGrid, type PuzzleGrid } from "./utils/puzzleMaker";
 import { calculatePieceDimensions } from "./utils/puzzlePieceGenerator";
-import type { PuzzleGrid } from "./utils/puzzleMaker";
+import PuzzlePiece from "./PuzzlePiece";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -79,10 +78,12 @@ export default function Puzzle({ pieces = defaultPieces }: PuzzleProps) {
     }
   }, [mounted]);
 
-  const { relativeStrokeWidth, viewBoxSize, tabDepth } =
-    calculatePieceDimensions(pieceSize, strokeWidth, curvatureIntensity);
+  const { tabDepth } = calculatePieceDimensions(
+    pieceSize,
+    strokeWidth,
+    curvatureIntensity
+  );
 
-  const svgSize = pieceSize + tabDepth * 2;
   const overlap = tabDepth;
 
   useEffect(() => {
@@ -168,7 +169,7 @@ export default function Puzzle({ pieces = defaultPieces }: PuzzleProps) {
   const selectedPiece = pieces.find((p) => p.selected);
   const otherPieces = pieces.filter((p) => !p.selected);
 
-  const getComponentForPiece = (rowIndex: number, colIndex: number) => {
+  const getPieceContent = (rowIndex: number, colIndex: number) => {
     const isCenter = rowIndex === centerRow && colIndex === centerCol;
 
     if (isCenter && selectedPiece) {
@@ -203,83 +204,26 @@ export default function Puzzle({ pieces = defaultPieces }: PuzzleProps) {
         >
           {puzzleGrid.pieces.map((row, rowIndex) =>
             row.map((piece, colIndex) => {
-              const pathData = generatePuzzlePiecePath(
-                piece.code,
-                pieceSize,
-                curvatureIntensity
-              );
-
               const key = `${rowIndex}-${colIndex}`;
-              const pieceComponent = getComponentForPiece(rowIndex, colIndex);
+              const content = getPieceContent(rowIndex, colIndex);
 
               return (
-                <svg
+                <PuzzlePiece
                   key={key}
-                  ref={(el) => {
+                  code={piece.code}
+                  rowIndex={rowIndex}
+                  colIndex={colIndex}
+                  pieceSize={pieceSize}
+                  fillColor={fillColor}
+                  strokeWidth={strokeWidth}
+                  curvatureIntensity={curvatureIntensity}
+                  content={content}
+                  onRef={(el) => {
                     if (el) {
                       piecesRef.current.set(key, el);
                     }
                   }}
-                  data-code={piece.code}
-                  data-row={rowIndex}
-                  data-col={colIndex}
-                  viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
-                  className="drop-shadow-sm"
-                  style={{
-                    width: `${svgSize}px`,
-                    height: `${svgSize}px`,
-                    marginLeft: `-${overlap}px`,
-                    marginTop: `-${overlap}px`,
-                    overflow: "visible",
-                    position: "relative",
-                  }}
-                >
-                  <defs>
-                    <linearGradient
-                      id={`gradient-${rowIndex}-${colIndex}`}
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop
-                        offset="0%"
-                        style={{ stopColor: fillColor, stopOpacity: 1 }}
-                      />
-                      <stop
-                        offset="100%"
-                        style={{ stopColor: fillColor, stopOpacity: 0.7 }}
-                      />
-                    </linearGradient>
-                  </defs>
-
-                  <g
-                    transform={`translate(${viewBoxSize / 2}, ${
-                      viewBoxSize / 2
-                    }) translate(${-pieceSize / 2}, ${-pieceSize / 2})`}
-                  >
-                    <path
-                      d={pathData}
-                      fill={`url(#gradient-${rowIndex}-${colIndex})`}
-                      stroke="#1e293b"
-                      strokeWidth={relativeStrokeWidth}
-                      strokeLinejoin="round"
-                    />
-                  </g>
-
-                  {pieceComponent && (
-                    <foreignObject
-                      x={overlap}
-                      y={overlap}
-                      width={pieceSize}
-                      height={pieceSize}
-                    >
-                      <div className="w-full h-full flex items-center justify-center">
-                        {pieceComponent}
-                      </div>
-                    </foreignObject>
-                  )}
-                </svg>
+                />
               );
             })
           )}
