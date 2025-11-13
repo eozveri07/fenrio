@@ -1,342 +1,242 @@
-"use client";
+import { useState } from "react";
+import { generatePuzzlePiecePath } from "./utils/puzzleGenerator";
+import { FaSyncAlt } from "react-icons/fa";
 
-import { useState, useEffect, useRef } from "react";
-import { PUZZLE_ROTATION_MAP, RotationInfo } from "./rotation-map";
+const PuzzlePieceGenerator = () => {
+  const [code, setCode] = useState("0211");
+  const [size, setSize] = useState(200);
+  const [fillColor, setFillColor] = useState("#3b82f6");
+  const [strokeWidth, setStrokeWidth] = useState(2);
+  const [curvatureIntensity, setCurvatureIntensity] = useState(0.25);
 
-interface PuzzlePiece {
-  id: number;
-  row: number;
-  col: number;
-  image: string | React.ReactNode;
-  currentPosition: { x: number; y: number };
-  correctPosition: { row: number; col: number };
-  isPlaced: boolean;
-  pieceCode: string; // Örnek: "1001" = üst çıkıntı, sağ düz, alt girinti, sol çıkıntı
-  rotationInfo: RotationInfo; // Representative kod ve döndürme açısı
-}
-
-interface PuzzleProps {
-  pieces: (string | React.ReactNode)[];
-  rows?: number;
-  cols?: number;
-  maskPath?: string; // PNG mask dosyalarının bulunduğu path (varsayılan: "/puzzle-masks/")
-  onComplete?: () => void;
-}
-
-// Edge kodunu parça koduna çevir (saat yönünde: üst-sağ-alt-sol)
-// 0 = düz (flat), 1 = çıkıntı (tab), 2 = girinti (blank)
-// Not: "0000" kodu oluşturulmaz - tüm kenarları düz olan puzzle parçası olamaz
-// - Köşe parçalar: 2 kenar flat
-// - Kenar parçalar (köşe değil): 1 kenar flat
-// - İç parçalar: 0 kenar flat (hepsi tab/blank)
-const generatePieceCode = (
-  row: number,
-  col: number,
-  rows: number,
-  cols: number,
-  edgeMap: Map<string, "tab" | "blank" | "flat">
-): string => {
-  const key = (r: number, c: number, side: string) => `${r}-${c}-${side}`;
-
-  // Kenar kontrolü
-  const isTopEdge = row === 0;
-  const isBottomEdge = row === rows - 1;
-  const isLeftEdge = col === 0;
-  const isRightEdge = col === cols - 1;
-
-  // Kenar parçaları otomatik düz olmalı
-  const top = isTopEdge ? "flat" : edgeMap.get(key(row - 1, col, "bottom")) === "tab" ? "blank" : "tab";
-  const right = isRightEdge ? "flat" : Math.random() > 0.5 ? "tab" : "blank";
-  const bottom = isBottomEdge ? "flat" : Math.random() > 0.5 ? "tab" : "blank";
-  const left = isLeftEdge ? "flat" : edgeMap.get(key(row, col - 1, "right")) === "tab" ? "blank" : "tab";
-
-  // Edge map'e kaydet
-  edgeMap.set(key(row, col, "top"), top);
-  edgeMap.set(key(row, col, "bottom"), bottom);
-  edgeMap.set(key(row, col, "left"), left);
-  edgeMap.set(key(row, col, "right"), right);
-
-  // Saat yönünde üst-sağ-alt-sol formatında kod oluştur
-  const codeToNumber = (edge: "tab" | "blank" | "flat"): string => {
-    if (edge === "flat") return "0";
-    if (edge === "tab") return "1";
-    return "2"; // blank
+  const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^012]/g, "").slice(0, 4);
+    setCode(value);
   };
 
-  const code = `${codeToNumber(top)}${codeToNumber(right)}${codeToNumber(bottom)}${codeToNumber(left)}`;
-  
-  // Güvenlik kontrolü: "0000" kodu oluşturulmamalı
-  if (code === "0000") {
-    console.error(`Invalid puzzle piece code "0000" generated at row ${row}, col ${col}. This should never happen.`);
-    // Fallback: İç parça gibi davran (rastgele tab/blank)
-    return `${codeToNumber("tab")}${codeToNumber("blank")}${codeToNumber("tab")}${codeToNumber("blank")}`;
-  }
-
-  return code;
-};
-
-export default function Puzzle({
-  pieces,
-  rows = 3,
-  cols = 3,
-  maskPath = "/puzzle-masks/",
-  onComplete,
-}: PuzzleProps) {
-  const [puzzlePieces, setPuzzlePieces] = useState<PuzzlePiece[]>([]);
-  const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
-  const [draggedPiece, setDraggedPiece] = useState<number | null>(null);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(
-    null
-  );
-  const [containerSize, setContainerSize] = useState({ width: 600, height: 600 });
-  const containerRef = useRef<HTMLDivElement>(null);
-  const piecesRef = useRef<Map<number, HTMLDivElement>>(new Map());
-
-  // Container boyutunu güncelle (padding hariç)
-  useEffect(() => {
-    const updateSize = () => {
-      const container = containerRef.current;
-      if (container) {
-        const padding = 32 * 2; // p-8 = 2rem = 32px, her iki taraftan
-        setContainerSize({
-          width: container.offsetWidth - padding,
-          height: container.offsetHeight - padding,
-        });
-      }
-    };
-
-    updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
-  }, []);
-
-  // Puzzle parçalarını oluştur ve karıştır
-  useEffect(() => {
-    if (pieces.length === 0) return;
-
-    const totalPieces = rows * cols;
-    const piecesToUse = pieces.slice(0, totalPieces);
-
-    // Edge pattern'leri oluştur (komşular uyumlu olmalı)
-    const edgeMap = new Map<string, "tab" | "blank" | "flat">();
-    const newPieces: PuzzlePiece[] = piecesToUse.map((piece, index) => {
-      const row = Math.floor(index / cols);
-      const col = index % cols;
-      const pieceCode = generatePieceCode(row, col, rows, cols, edgeMap);
-      const rotationInfo = PUZZLE_ROTATION_MAP[pieceCode] || { representative: pieceCode, angle: 0 };
-
-      return {
-        id: index,
-        row,
-        col,
-        image: piece,
-        currentPosition: { x: 0, y: 0 },
-        correctPosition: { row, col },
-        isPlaced: false,
-        pieceCode,
-        rotationInfo,
-      };
-    });
-
-    // Parçaları karıştır ve rastgele pozisyonlara yerleştir
-    const shuffled = [...newPieces];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    // Karıştırılmış parçaları rastgele pozisyonlara yerleştir
-    const containerWidth = containerSize.width;
-    const containerHeight = containerSize.height;
-    const pieceWidth = containerWidth / cols;
-    const pieceHeight = containerHeight / rows;
-
-    shuffled.forEach((piece) => {
-      const randomX = Math.random() * (containerWidth - pieceWidth);
-      const randomY = Math.random() * (containerHeight - pieceHeight);
-      piece.currentPosition = { x: randomX, y: randomY };
-    });
-
-    setPuzzlePieces(shuffled);
-  }, [pieces, rows, cols, containerSize]);
-
-  // Mouse event handlers
-  const handleMouseDown = (
-    e: React.MouseEvent<HTMLDivElement>,
-    pieceId: number
-  ) => {
-    e.preventDefault();
-    const piece = puzzlePieces.find((p) => p.id === pieceId);
-    if (!piece || piece.isPlaced) return;
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    setSelectedPiece(pieceId);
-    setDraggedPiece(pieceId);
-    setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
+  const randomizeCode = () => {
+    const random = Array.from({ length: 4 }, () =>
+      Math.floor(Math.random() * 3)
+    ).join("");
+    setCode(random);
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (draggedPiece === null || dragOffset === null) return;
-
-    const container = containerRef.current;
-    if (!container) return;
-
-    const containerRect = container.getBoundingClientRect();
-    const x = e.clientX - containerRect.left - dragOffset.x;
-    const y = e.clientY - containerRect.top - dragOffset.y;
-
-    setPuzzlePieces((prev) =>
-      prev.map((piece) =>
-        piece.id === draggedPiece
-          ? { ...piece, currentPosition: { x, y } }
-          : piece
-      )
-    );
-  };
-
-  const handleMouseUp = () => {
-    if (draggedPiece === null) return;
-
-    const draggedPieceData = puzzlePieces.find((p) => p.id === draggedPiece);
-    if (!draggedPieceData || draggedPieceData.isPlaced) {
-      setSelectedPiece(null);
-      setDraggedPiece(null);
-      setDragOffset(null);
-      return;
-    }
-
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Snap kontrolü - doğru pozisyona yakınsa yerleştir
-    const containerWidth = container.offsetWidth;
-    const containerHeight = container.offsetHeight;
-    const pieceWidth = containerWidth / cols;
-    const pieceHeight = containerHeight / rows;
-
-    const correctX = draggedPieceData.correctPosition.col * pieceWidth;
-    const correctY = draggedPieceData.correctPosition.row * pieceHeight;
-
-    const currentX = draggedPieceData.currentPosition.x;
-    const currentY = draggedPieceData.currentPosition.y;
-
-    const threshold = Math.min(pieceWidth, pieceHeight) * 0.25;
-
-    if (
-      Math.abs(currentX - correctX) < threshold &&
-      Math.abs(currentY - correctY) < threshold
-    ) {
-      // Doğru pozisyona yerleştir
-      setPuzzlePieces((prev) => {
-        const updated = prev.map((piece) =>
-          piece.id === draggedPiece
-            ? {
-                ...piece,
-                currentPosition: { x: correctX, y: correctY },
-                isPlaced: true,
-              }
-            : piece
-        );
-
-        // Tüm parçalar yerleştirildi mi kontrol et
-        const allPlaced = updated.every((p) => p.isPlaced);
-        if (allPlaced && onComplete) {
-          setTimeout(() => onComplete(), 100);
-        }
-
-        return updated;
-      });
-    }
-
-    setSelectedPiece(null);
-    setDraggedPiece(null);
-    setDragOffset(null);
-  };
-
-  const pieceWidth = containerSize.width / cols;
-  const pieceHeight = containerSize.height / rows;
+  const pathData = generatePuzzlePiecePath(code, size, curvatureIntensity);
+  const viewBoxSize = size * 1.5;
 
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full h-[600px] bg-gray-100 rounded-lg p-8"
-      style={{ overflow: "visible" }}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-    >
-      {/* Puzzle pieces */}
-      {puzzlePieces.map((piece) => {
-        // Representative kodunu kullan (döndürme ile optimize edilmiş)
-        const maskUrl = `${maskPath}puzzle-piece-${piece.rotationInfo.representative}.png`;
-        const rotationAngle = piece.rotationInfo.angle;
+    <div className="max-w-6xl mx-auto">
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h2 className="text-2xl font-semibold text-slate-800 mb-6">
+            Yapılandırma
+          </h2>
 
-        // Transform: scale + rotation
-        const transform = selectedPiece === piece.id && !piece.isPlaced
-          ? `scale(1.1) rotate(${rotationAngle}deg)`
-          : `rotate(${rotationAngle}deg)`;
-
-        return (
-          <div
-            key={piece.id}
-            ref={(el) => {
-              if (el) piecesRef.current.set(piece.id, el);
-            }}
-            className={`absolute cursor-move ${
-              piece.isPlaced ? "cursor-default" : "cursor-grab active:cursor-grabbing"
-            } ${selectedPiece === piece.id ? "z-50" : "z-10"}`}
-            style={{
-              width: `${pieceWidth}px`,
-              height: `${pieceHeight}px`,
-              left: piece.isPlaced
-                ? `${piece.correctPosition.col * pieceWidth}px`
-                : `${piece.currentPosition.x}px`,
-              top: piece.isPlaced
-                ? `${piece.correctPosition.row * pieceHeight}px`
-                : `${piece.currentPosition.y}px`,
-              transform,
-              transformOrigin: "center center",
-              transition: piece.isPlaced ? "all 0.3s ease" : "transform 0.2s ease",
-            }}
-            onMouseDown={(e) => handleMouseDown(e, piece.id)}
-          >
-            {/* PNG mask ile puzzle parçası */}
-            <div
-              className="w-full h-full overflow-hidden shadow-lg"
-              style={{
-                maskImage: `url(${maskUrl})`,
-                WebkitMaskImage: `url(${maskUrl})`,
-                maskSize: "100% 100%",
-                WebkitMaskSize: "100% 100%",
-                maskRepeat: "no-repeat",
-                WebkitMaskRepeat: "no-repeat",
-                maskPosition: "center",
-                WebkitMaskPosition: "center",
-              }}
-            >
-              {typeof piece.image === "string" ? (
-                <img
-                  src={piece.image}
-                  alt={`Puzzle piece ${piece.id}`}
-                  className="w-full h-full object-cover"
-                  style={{
-                    objectPosition: `${
-                      (piece.correctPosition.col / (cols - 1 || 1)) * 100
-                    }% ${
-                      (piece.correctPosition.row / (rows - 1 || 1)) * 100
-                    }%`,
-                  }}
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Puzzle Kodu
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={code}
+                  onChange={handleCodeChange}
+                  placeholder="0211"
+                  maxLength={4}
+                  className="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-2xl font-mono tracking-widest text-center"
                 />
-              ) : (
-                <div className="w-full h-full">{piece.image}</div>
-              )}
+                <button
+                  onClick={randomizeCode}
+                  className="px-4 py-3 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                  title="Rastgele"
+                >
+                  <FaSyncAlt className="w-5 h-5 text-slate-600" />
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 mt-2">
+                Üst, Sağ, Alt, Sol (saat yönünde 12'den başlayarak)
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Boyut: {size}px
+              </label>
+              <input
+                type="range"
+                min="100"
+                max="400"
+                value={size}
+                onChange={(e) => setSize(Number(e.target.value))}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Dolgu Rengi
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={fillColor}
+                  onChange={(e) => setFillColor(e.target.value)}
+                  className="w-16 h-12 rounded border border-slate-300 cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={fillColor}
+                  onChange={(e) => setFillColor(e.target.value)}
+                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg font-mono"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Çizgi Kalınlığı: {strokeWidth}px
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="8"
+                value={strokeWidth}
+                onChange={(e) => setStrokeWidth(Number(e.target.value))}
+                className="w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Eğrilik Yoğunluğu: {curvatureIntensity.toFixed(2)}
+              </label>
+              <input
+                type="range"
+                min="0.1"
+                max="0.5"
+                step="0.05"
+                value={curvatureIntensity}
+                onChange={(e) => setCurvatureIntensity(Number(e.target.value))}
+                className="w-full"
+              />
             </div>
           </div>
-        );
-      })}
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <h2 className="text-2xl font-semibold text-slate-800 mb-6">
+            Önizleme
+          </h2>
+
+          <div className="flex items-center justify-center bg-slate-50 rounded-lg p-8">
+            <svg
+              id="puzzle-svg"
+              viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+              className="max-w-full h-auto drop-shadow-xl"
+              style={{ width: "100%", maxWidth: "400px" }}
+            >
+              <defs>
+                <filter
+                  id="shadow"
+                  x="-50%"
+                  y="-50%"
+                  width="200%"
+                  height="200%"
+                >
+                  <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+                  <feOffset dx="2" dy="2" result="offsetblur" />
+                  <feComponentTransfer>
+                    <feFuncA type="linear" slope="0.3" />
+                  </feComponentTransfer>
+                  <feMerge>
+                    <feMergeNode />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <linearGradient
+                  id="gradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="100%"
+                >
+                  <stop
+                    offset="0%"
+                    style={{ stopColor: fillColor, stopOpacity: 1 }}
+                  />
+                  <stop
+                    offset="100%"
+                    style={{ stopColor: fillColor, stopOpacity: 0.7 }}
+                  />
+                </linearGradient>
+              </defs>
+
+              <g
+                transform={`translate(${viewBoxSize / 2}, ${
+                  viewBoxSize / 2
+                }) translate(${-size / 2}, ${-size / 2})`}
+              >
+                <path
+                  d={pathData}
+                  fill="url(#gradient)"
+                  stroke="#1e293b"
+                  strokeWidth={strokeWidth}
+                  strokeLinejoin="round"
+                  filter="url(#shadow)"
+                />
+              </g>
+            </svg>
+          </div>
+
+          <div className="mt-6 bg-slate-50 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-2">
+              Kenar Yapılandırması
+            </h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-600">Üst:</span>
+                <span className="font-mono font-semibold">
+                  {code[0] || "-"} ({getEdgeLabel(code[0])})
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Sağ:</span>
+                <span className="font-mono font-semibold">
+                  {code[1] || "-"} ({getEdgeLabel(code[1])})
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Alt:</span>
+                <span className="font-mono font-semibold">
+                  {code[2] || "-"} ({getEdgeLabel(code[2])})
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600">Sol:</span>
+                <span className="font-mono font-semibold">
+                  {code[3] || "-"} ({getEdgeLabel(code[3])})
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
+};
+
+function getEdgeLabel(digit: string): string {
+  switch (digit) {
+    case "0":
+      return "Düz";
+    case "1":
+      return "Çıkıntı";
+    case "2":
+      return "Girinti";
+    default:
+      return "Bilinmeyen";
+  }
 }
+
+export default PuzzlePieceGenerator;
