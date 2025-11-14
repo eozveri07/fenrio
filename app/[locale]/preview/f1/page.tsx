@@ -9,7 +9,7 @@ export default function F1Page() {
       <div className="h-screen"></div>
 
       {/* F1 Komponenti - pinlenecek (3 ekran boyu scroll için) */}
-      <div>
+      <div className="w-full border-2 border-red-500">
         <F1 />
       </div>
 

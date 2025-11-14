@@ -41,7 +41,7 @@ export default function F1Model({
   useFrame(() => {
     if (modelRef.current) {
       const startY = 0;
-      const startZ = -500;
+      const startZ = -50;
       const startX = 0;
 
       const endY = 0;

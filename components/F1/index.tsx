@@ -18,7 +18,7 @@ export default function F1() {
     const pinTrigger = ScrollTrigger.create({
       trigger: containerRef.current,
       start: "top top",
-      end: "+=500vh",
+      end: "+=1000vh",
       pin: true,
       pinSpacing: true,
       onUpdate: (self) => {
