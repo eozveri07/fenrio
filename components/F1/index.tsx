@@ -23,26 +23,7 @@ export default function F1() {
 
     const { wheelLF, wheelLR, wheelRR, wheelRF } = wheels;
 
-    // Tekerleklerin yüklendiğinden emin olmak için kısa bir gecikme
     const setupAnimation = () => {
-      // Başlangıç pozisyonlarını kaydet (world pozisyonlarını al)
-      const getWorldPosition = (
-        obj: THREE.Object3D | null
-      ): THREE.Vector3 | null => {
-        if (!obj) return null;
-        const worldPos = new THREE.Vector3();
-        obj.getWorldPosition(worldPos);
-        return worldPos;
-      };
-
-      const initialPositions = {
-        wheelLF: wheelLF ? getWorldPosition(wheelLF) : null,
-        wheelLR: wheelLR ? getWorldPosition(wheelLR) : null,
-        wheelRR: wheelRR ? getWorldPosition(wheelRR) : null,
-        wheelRF: wheelRF ? getWorldPosition(wheelRF) : null,
-      };
-
-      // Local pozisyonları da kaydet (daha doğru çalışması için)
       const localPositions = {
         wheelLF: wheelLF ? wheelLF.position.clone() : null,
         wheelLR: wheelLR ? wheelLR.position.clone() : null,
@@ -50,21 +31,18 @@ export default function F1() {
         wheelRF: wheelRF ? wheelRF.position.clone() : null,
       };
 
-      // ScrollTrigger ile pinleme ve animasyon
       const pinTrigger = ScrollTrigger.create({
         trigger: containerRef.current,
         start: "top top",
-        end: "+=300vh", // 3 ekran boyu - daha yavaş animasyon için
+        end: "+=500vh",
         pin: true,
         pinSpacing: true,
         onUpdate: (self) => {
-          const progress = self.progress; // 0 ile 1 arası
-          const separationDistance = 1; // Tekerleklerin ayrılma mesafesi
+          const progress = self.progress;
+          const separationDistance = 1;
 
-          // Scroll progress'i güncelle (hologram kartı için)
           setScrollProgress(progress);
 
-          // Sol tekerlekler sola doğru (-x yönü)
           if (wheelLF && localPositions.wheelLF) {
             wheelLF.position.x =
               localPositions.wheelLF.x + progress * separationDistance;
@@ -74,7 +52,6 @@ export default function F1() {
               localPositions.wheelLR.x + progress * separationDistance;
           }
 
-          // Sağ tekerlekler sağa doğru (+x yönü)
           if (wheelRR && localPositions.wheelRR) {
             wheelRR.position.x =
               localPositions.wheelRR.x - progress * separationDistance;
@@ -89,7 +66,6 @@ export default function F1() {
       return pinTrigger;
     };
 
-    // Model yüklendikten sonra animasyonu kur
     let pinTrigger: ScrollTrigger | null = null;
     const timer = setTimeout(() => {
       pinTrigger = setupAnimation();
@@ -109,10 +85,7 @@ export default function F1() {
   }, [wheels]);
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full h-screen relative"
-    >
+    <div ref={containerRef} className="w-full h-screen relative">
       <Scene3D
         onWheelsReady={setWheels}
         scrollProgress={scrollProgress}

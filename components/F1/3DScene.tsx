@@ -23,12 +23,10 @@ interface Scene3DProps {
   };
 }
 
-// Kamera kontrolü - modelin merkezine bakıyor
 function CameraController() {
   const { camera } = useThree();
 
   useFrame(() => {
-    // Kamerayı modelin merkezine (0,0,0) bakacak şekilde ayarla
     camera.lookAt(0, 0, 0);
   });
 
@@ -54,7 +52,6 @@ export default function Scene3D({
         {/* Transparan arka plan için */}
         <color attach="background" args={["transparent"]} />
 
-        {/* Kamera - yukarıdan bakıyor, model merkeze hizalandığı için 0,0,0'a bakıyor */}
         <PerspectiveCamera makeDefault position={[0, 4, 8]} fov={50} />
         <CameraController />
 
@@ -63,7 +60,6 @@ export default function Scene3D({
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <pointLight position={[-10, -10, -5]} intensity={0.5} />
 
-        {/* Ortam ışığı (opsiyonel, daha gerçekçi görünüm için) */}
         <Environment preset="city" />
 
         {/* F1 Modeli */}
@@ -71,12 +67,8 @@ export default function Scene3D({
           <F1Model onWheelsReady={onWheelsReady} />
         </Suspense>
 
-        {/* Hologram Kartları - Her tekerleğin üzerinde */}
         {wheels && (
-          <WheelHologramCards
-            wheels={wheels}
-            scrollProgress={scrollProgress}
-          />
+          <WheelHologramCards wheels={wheels} scrollProgress={scrollProgress} />
         )}
       </Canvas>
     </div>

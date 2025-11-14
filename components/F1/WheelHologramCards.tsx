@@ -72,15 +72,12 @@ export default function WheelHologramCards({
     const scaleRef = useRef(1);
     const zOffsetRef = useRef(0);
 
-    // Bu card hover mı?
     const isHovered = hoveredCardKey === wheelKey;
 
-    // Pozisyonu sürekli güncelle ve hover animasyonu
     useFrame((state) => {
       if (wheel && cardRef.current) {
         wheel.getWorldPosition(positionRef.current);
 
-        // Hover animasyonu - smooth transition
         const targetScale = isHovered ? 2.4 : 1;
         const targetZOffset = isHovered ? -0.6 : 0;
 
@@ -104,9 +101,7 @@ export default function WheelHologramCards({
         cardRef.current.position.y = baseY + direction.y * zOffsetRef.current;
         cardRef.current.position.z = baseZ + direction.z * zOffsetRef.current;
 
-        // Hover zone pozisyonunu güncelle (group'a göre relative)
         if (hoverZoneRef.current) {
-          // Hover zone group içinde olduğu için relative pozisyon
           hoverZoneRef.current.position.set(0, 0, 0);
         }
 
@@ -119,12 +114,10 @@ export default function WheelHologramCards({
       }
     });
 
-    // Sadece tekerler tam çıktıysa card'ı göster
     if (!wheelsFullyOut) return null;
 
     return (
       <group ref={cardRef} renderOrder={isHovered ? 1000 : 0}>
-        {/* Invisible hover zone - Billboard içinde, kameraya bakacak şekilde */}
         <Billboard>
           <mesh
             ref={hoverZoneRef}
@@ -217,7 +210,6 @@ export default function WheelHologramCards({
     );
   };
 
-  // Card'ları hover durumuna göre ayır
   const allCards = [
     {
       wheel: wheels.wheelLF,
@@ -252,7 +244,6 @@ export default function WheelHologramCards({
 
   return (
     <>
-      {/* Önce hover olmayan card'ları render et */}
       {nonHoveredCards.map((card) => (
         <WheelCard
           key={card.wheelKey}
@@ -263,7 +254,6 @@ export default function WheelHologramCards({
         />
       ))}
 
-      {/* Hover olan card'ı en son render et (üstte görünsün) */}
       {hoveredCard && (
         <WheelCard
           key={hoveredCard.wheelKey}

@@ -18,20 +18,15 @@ interface F1ModelProps {
   }) => void;
 }
 
-export default function F1Model({
-  modelPath,
-  onWheelsReady,
-}: F1ModelProps) {
+export default function F1Model({ modelPath, onWheelsReady }: F1ModelProps) {
   const modelRef = useRef<THREE.Group>(null);
   const actualModelPath = modelPath || MODEL_PATH;
 
-  // Model yükleme - useGLTF hook'u Suspense ile çalışır
   const gltf = useGLTF(actualModelPath);
 
   // Modeli merkeze hizala ve tekerlekleri bul
   useEffect(() => {
     if (gltf.scene && modelRef.current) {
-      // Bounding box hesapla
       const box = new THREE.Box3().setFromObject(gltf.scene);
       const center = box.getCenter(new THREE.Vector3());
 
@@ -65,14 +60,12 @@ export default function F1Model({
     }
   }, [gltf.scene, onWheelsReady]);
 
-  // Yavaş döndürme animasyonu
   useFrame((state, delta) => {
     if (modelRef.current) {
-      modelRef.current.rotation.y += delta * 0.2; // Yavaşça döndür
+      modelRef.current.rotation.y += delta * 0.2;
     }
   });
 
-  // Model göster - merkeze hizalandığı için [0, 0, 0]
   return (
     <primitive
       ref={modelRef}
