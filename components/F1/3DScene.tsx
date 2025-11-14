@@ -4,22 +4,10 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera, Environment } from "@react-three/drei";
 import { Suspense } from "react";
 import F1Model from "./F1Model";
-import * as THREE from "three";
 
 interface Scene3DProps {
-  onWheelsReady?: (wheels: {
-    wheelLF: THREE.Object3D | null;
-    wheelLR: THREE.Object3D | null;
-    wheelRR: THREE.Object3D | null;
-    wheelRF: THREE.Object3D | null;
-  }) => void;
   scrollProgress?: number;
-  wheels?: {
-    wheelLF: THREE.Object3D | null;
-    wheelLR: THREE.Object3D | null;
-    wheelRR: THREE.Object3D | null;
-    wheelRF: THREE.Object3D | null;
-  };
+  onModelReady?: () => void;
 }
 
 function CameraController() {
@@ -32,7 +20,10 @@ function CameraController() {
   return null;
 }
 
-export default function Scene3D({ onWheelsReady }: Scene3DProps) {
+export default function Scene3D({
+  scrollProgress = 0,
+  onModelReady,
+}: Scene3DProps) {
   return (
     <div className="w-full h-full relative">
       <Canvas
@@ -59,7 +50,7 @@ export default function Scene3D({ onWheelsReady }: Scene3DProps) {
 
         {/* F1 Modeli */}
         <Suspense fallback={null}>
-          <F1Model onWheelsReady={onWheelsReady} />
+          <F1Model scrollProgress={scrollProgress} onModelReady={onModelReady} />
         </Suspense>
       </Canvas>
     </div>
