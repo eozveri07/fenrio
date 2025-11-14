@@ -4,7 +4,6 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera, Environment } from "@react-three/drei";
 import { Suspense } from "react";
 import F1Model from "./F1Model";
-import WheelHologramCards from "./WheelHologramCards";
 import * as THREE from "three";
 
 interface Scene3DProps {
@@ -33,11 +32,7 @@ function CameraController() {
   return null;
 }
 
-export default function Scene3D({
-  onWheelsReady,
-  scrollProgress = 0,
-  wheels,
-}: Scene3DProps) {
+export default function Scene3D({ onWheelsReady }: Scene3DProps) {
   return (
     <div className="w-full h-full relative">
       <Canvas
@@ -66,10 +61,6 @@ export default function Scene3D({
         <Suspense fallback={null}>
           <F1Model onWheelsReady={onWheelsReady} />
         </Suspense>
-
-        {wheels && (
-          <WheelHologramCards wheels={wheels} scrollProgress={scrollProgress} />
-        )}
       </Canvas>
     </div>
   );
