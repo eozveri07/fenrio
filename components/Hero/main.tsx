@@ -22,9 +22,19 @@ export default function HeroMain() {
     <section
       id="hero"
       ref={containerRef}
-      className="w-full h-full flex items-center justify-center overflow-hidden absolute top-0 left-0 transition-opacity duration-300 opacity-0 transform-y-100"
+      className="w-full h-[calc(100vh-80px)] pt-9 flex items-center justify-center overflow-hidden absolute bottom-[80px] left-0 transition-opacity duration-300 opacity-0 transform-y-100"
     >
-      <h3 className="text-white text-4xl font-bold">Hero Main</h3>
+      <div className="w-full h-full items-center justify-center overflow-hidden grid grid-cols-2 gap-4">
+        <div className="w-full h-full flex p-9 flex-col gap-4 items-start justify-center">
+          <h1 className="text-white/80 text-3xl font-thin uppercase">
+            Software Marketing
+          </h1>
+          <p className="text-white text-5xl font-bold">
+            We are a software marketing company that helps businesses grow their
+            online presence.
+          </p>
+        </div>
+      </div>
     </section>
   );
 }
