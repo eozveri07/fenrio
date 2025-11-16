@@ -23,14 +23,14 @@ export default function HeroMain() {
     <section
       id="hero"
       ref={containerRef}
-      className="w-full h-[calc(100vh-80px)] pt-9 flex items-center justify-center overflow-hidden absolute bottom-[80px] left-0 transition-opacity duration-300 opacity-0 transform-y-100"
+      className="w-full h-[calc(100vh-200px)] flex items-center justify-center overflow-hidden absolute top-[120px] left-0 transition-opacity duration-300 opacity-0 transform-y-100"
     >
       <div className="w-full h-full items-center justify-center overflow-hidden grid grid-cols-2 gap-4">
         <div className="w-full h-full flex p-9 flex-col gap-4 items-start justify-center">
           <h1 className="text-white/80 text-3xl font-thin uppercase">
             Software Marketing
           </h1>
-          <p className="text-white text-5xl font-bold">
+          <p className="text-white text-6xl font-semibold">
             We are a{" "}
             <Highlighter action="highlight" color="#D63E3D">
               software marketing
