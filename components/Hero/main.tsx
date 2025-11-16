@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useHeroContext } from "./context";
 import { gsap } from "gsap";
+import { Highlighter } from "../ui/highlighter";
 
 export default function HeroMain() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,8 +31,11 @@ export default function HeroMain() {
             Software Marketing
           </h1>
           <p className="text-white text-5xl font-bold">
-            We are a software marketing company that helps businesses grow their
-            online presence.
+            We are a{" "}
+            <Highlighter action="highlight" color="#D63E3D">
+              software marketing
+            </Highlighter>{" "}
+            company that helps businesses grow their online presence.
           </p>
         </div>
       </div>
