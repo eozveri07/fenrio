@@ -1,4 +1,5 @@
 "use client";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function Header({
   ref,
@@ -8,6 +9,7 @@ export default function Header({
   return (
     <div className="fixed top-0 left-0 w-full z-200 flex items-start justify-between p-9">
       <div id="logo" ref={ref} />
+      <LanguageSwitcher />
     </div>
   );
 }
