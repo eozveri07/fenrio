@@ -52,7 +52,7 @@ function HeroContent() {
   return (
     <section
       id="hero"
-      className={`w-full h-screen flex items-center justify-center overflow-hidden relative transition-opacity duration-300 bg-black`}
+      className={`w-full min-h-screen h-full flex items-center justify-center overflow-hidden relative transition-opacity duration-300 bg-black`}
     >
       <div className="w-full h-full absolute top-0 left-0">
         <Image
