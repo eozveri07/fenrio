@@ -12,7 +12,11 @@ export default function HeroMain() {
   const titleLine2Ref = useRef<HTMLSpanElement>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);
   const ctaButtonsRef = useRef<HTMLDivElement>(null);
-  const { logoAnimationCompleted, backgroundImageLoaded, setBackgroundImageLoaded } = useHeroContext();
+  const {
+    logoAnimationCompleted,
+    backgroundImageLoaded,
+    setBackgroundImageLoaded,
+  } = useHeroContext();
 
   useEffect(() => {
     if (!logoAnimationCompleted || !backgroundImageLoaded) return;
