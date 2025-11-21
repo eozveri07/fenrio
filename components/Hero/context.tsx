@@ -37,7 +37,7 @@ export function HeroProvider({
 }) {
   const internalHeaderRef = useRef<HTMLDivElement | null>(null);
   const headerRef = externalHeaderRef || internalHeaderRef;
-  const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(false);
+  const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(true);
   const [logoImageLoaded, setLogoImageLoaded] = useState(false);
   const [logoAnimationCompleted, setLogoAnimationCompleted] = useState(false);
   const [flipAnimationCompleted, setFlipAnimationCompleted] = useState(false);

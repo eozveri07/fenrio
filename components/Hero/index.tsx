@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import HeroMain from "./main";
 
 function HeroContent() {
-  const { setBackgroundImageLoaded, allAnimationsCompleted } = useHeroContext();
+  const { allAnimationsCompleted } = useHeroContext();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -54,19 +54,6 @@ function HeroContent() {
       id="hero"
       className={`w-full min-h-screen h-full flex items-center justify-center overflow-hidden relative transition-opacity duration-300 bg-black`}
     >
-      <div className="w-full h-full absolute top-0 left-0">
-        <Image
-          src="/assets/hero/background.webp"
-          alt="Background"
-          width={1920}
-          height={1080}
-          quality={75}
-          className="w-full h-full object-cover"
-          onLoad={() => setBackgroundImageLoaded(true)}
-          priority
-        />
-        <div className="absolute inset-0 pointer-events-none bg-black/80" />
-      </div>
       <AnimatedLogo />
       <HeroMain />
       <ScrollDown />
