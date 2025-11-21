@@ -12,8 +12,8 @@ import {
 interface HeroContextType {
   // Refs
   headerRef: React.RefObject<HTMLDivElement | null>;
-  // Image loading states
-  backgroundImageLoaded: boolean;
+  // Loading states
+  backgroundImageLoaded: boolean; // Video yükleme durumu için kullanılıyor
   logoImageLoaded: boolean;
   // Animation completion states
   logoAnimationCompleted: boolean;
@@ -37,12 +37,11 @@ export function HeroProvider({
 }) {
   const internalHeaderRef = useRef<HTMLDivElement | null>(null);
   const headerRef = externalHeaderRef || internalHeaderRef;
-  const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(true);
+  const [backgroundImageLoaded, setBackgroundImageLoaded] = useState(false);
   const [logoImageLoaded, setLogoImageLoaded] = useState(false);
   const [logoAnimationCompleted, setLogoAnimationCompleted] = useState(false);
   const [flipAnimationCompleted, setFlipAnimationCompleted] = useState(false);
 
-  // Tüm animasyonlar tamamlandığında true olur
   const allAnimationsCompleted = useMemo(
     () => logoAnimationCompleted && flipAnimationCompleted,
     [logoAnimationCompleted, flipAnimationCompleted]
@@ -75,4 +74,3 @@ export function useHeroContext() {
   }
   return context;
 }
-
