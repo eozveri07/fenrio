@@ -7,6 +7,7 @@ import { gsap } from "gsap";
 export default function HeroMain() {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLDivElement>(null);
+  const videoElementRef = useRef<HTMLVideoElement>(null);
   const badgeRef = useRef<HTMLDivElement>(null);
   const titleLine1Ref = useRef<HTMLSpanElement>(null);
   const titleLine2Ref = useRef<HTMLSpanElement>(null);
@@ -80,9 +81,32 @@ export default function HeroMain() {
     );
   }, [logoAnimationCompleted, backgroundImageLoaded]);
 
-  const handleVideoLoaded = () => {
-    setBackgroundImageLoaded(true);
-  };
+  useEffect(() => {
+    const video = videoElementRef.current;
+    if (!video) return;
+
+    const checkVideoReady = () => {
+      if (video.readyState >= 2) {
+        setBackgroundImageLoaded(true);
+      }
+    };
+
+    checkVideoReady();
+
+    const handleLoaded = () => {
+      setBackgroundImageLoaded(true);
+    };
+
+    video.addEventListener("loadeddata", handleLoaded);
+    video.addEventListener("canplay", handleLoaded);
+    video.addEventListener("loadedmetadata", handleLoaded);
+
+    return () => {
+      video.removeEventListener("loadeddata", handleLoaded);
+      video.removeEventListener("canplay", handleLoaded);
+      video.removeEventListener("loadedmetadata", handleLoaded);
+    };
+  }, [setBackgroundImageLoaded]);
 
   return (
     <section
@@ -169,13 +193,12 @@ export default function HeroMain() {
               }}
             >
               <video
+                ref={videoElementRef}
                 src="/assets/hero/f1-video.mp4"
                 autoPlay
                 muted
                 loop
                 playsInline
-                onLoadedData={handleVideoLoaded}
-                onCanPlay={handleVideoLoaded}
                 className="w-full h-full object-contain object-center"
               />
             </div>
